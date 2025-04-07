@@ -25,13 +25,23 @@ const Dashboard = () => {
     const fetchGames = async () => {
       try {
         const gamesData = await getAllGames(token);
-        setGames(gamesData.games);
+        console.log("API Response:", gamesData);
+        
+        // Check if gamesData is an object and has the 'games' property
+        if (gamesData && Array.isArray(gamesData.games)) {
+          setGames(gamesData.games);
+        } else {
+          setGames([]);
+          console.error("Unexpected API response format:", gamesData);
+        }
+        
         setLoading(false);
       } catch (error) {
         console.error("Error fetching games:", error);
         setError("Failed to load games. Please try again.");
         setShowError(true);
         setLoading(false);
+        setGames([]); // ensure games is an empty array on error
       }
     };
 
@@ -60,7 +70,15 @@ const Dashboard = () => {
       const response = await updateGames(token, updatedGames);
 
       // Update the local state with the response from the API
-      setGames(response.games);
+      if (response && Array.isArray(response.games)) {
+        setGames(response.games);
+      } else {
+        console.error("Unexpected API response format:", response);
+        const refreshedData = await getAllGames(token);
+        if (refreshedData && Array.isArray(refreshedData.games)) {
+          setGames(refreshedData.games);
+        }
+      }
 
       // Close the dialog and reset the input
       setOpenNewGameDialog(false);
@@ -83,7 +101,15 @@ const Dashboard = () => {
       const response = await updateGames(token, updatedGames);
 
       // Update the local state with the response from the API
-      setGames(response.games);
+      if (response && Array.isArray(response.games)) {
+        setGames(response.games);
+      } else {
+        console.error("Unexpected API response format:", response);
+        const refreshedData = await getAllGames(token);
+        if (refreshedData && Array.isArray(refreshedData.games)) {
+          setGames(refreshedData.games);
+        }
+      }
 
       // Close the dialog and reset the selectedGameId
       setOpenDeleteDialog(false);
@@ -149,11 +175,16 @@ const Dashboard = () => {
             return (
               <div key={index} className="bg-white rounded-lg shadow-md overflow-hidden">
                 <div 
-                  className="h-36 bg-cover bg-center" 
+                  className="h-36 bg-cover bg-center flex items-center justify-center" 
                   style={{ 
-                    backgroundImage: `url(${game.thumbnail || 'https://via.placeholder.com/300x140?text=No+Thumbnail'})`
+                    backgroundImage: game.thumbnail ? `url(${game.thumbnail})` : 'none',
+                    backgroundColor: game.thumbnail ? 'transparent' : '#e0e0e0'
                   }}
-                ></div>
+                >
+                  {!game.thumbnail && (
+                    <span className="text-gray-500 text-lg">No Thumbnail</span>
+                  )}
+                </div>
                 <div className="p-4">
                   <h2 className="text-xl font-semibold mb-2">{game.name}</h2>
                   <p className="text-gray-600 text-sm">Questions: {questionCount}</p>
