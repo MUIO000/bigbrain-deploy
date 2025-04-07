@@ -12,7 +12,7 @@ export const useAuth = () => {
     try {
       const res = await loginApi(email, password, name);
       // The token is stored in local storage by the login function in AuthContext
-      login(res.token);
+      login(res.token, email);
     } catch (err) {
       setError(err.response?.data?.error || 'Login failed');
     } finally {

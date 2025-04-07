@@ -19,7 +19,7 @@ export const getAllGames = async (token) => {
 /**
  * Fetch a specific game by its ID.
  * @param {string} token 
- * @param {integer} gameId 
+ * @param {object} games
  * @returns 
  */
 export const updateGames = async (token, games) => {
