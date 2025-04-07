@@ -183,3 +183,73 @@ const Dashboard = () => {
           })}
         </div>
       )}
+
+      {/* New Game Dialog */}
+      {openNewGameDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6">
+            <h2 className="text-xl font-semibold mb-4">Create New Game</h2>
+            <InputField
+              label="Game Name"
+              id="name"
+              value={newGameName}
+              onChange={(e) => setNewGameName(e.target.value)}
+              placeholder="Enter game name"
+              required
+            />
+            <div className="flex justify-end space-x-2 mt-6">
+              <Button 
+                variant="secondary" 
+                onClick={() => setOpenNewGameDialog(false)}
+              >
+                Cancel
+              </Button>
+              <Button 
+                variant="primary" 
+                onClick={handleCreateGame}
+              >
+                Create
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Game Dialog */}
+      {openDeleteDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6">
+            <h2 className="text-xl font-semibold mb-4">Delete Game</h2>
+            <p className="text-gray-700">
+              Are you sure you want to delete &quot;{selectedGameId !== null && games[selectedGameId]?.name}&quot;? 
+              This action cannot be undone.
+            </p>
+            <div className="flex justify-end space-x-2 mt-6">
+              <Button 
+                variant="secondary" 
+                onClick={() => setOpenDeleteDialog(false)}
+              >
+                Cancel
+              </Button>
+              <Button 
+                variant="danger" 
+                onClick={handleDeleteGame}
+              >
+                Delete
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Error Popup */}
+      <ErrorPopup 
+        message={error} 
+        show={showError} 
+        onClose={() => setShowError(false)} 
+      />
+    </div>
+  );
+};
+
+export default Dashboard;
