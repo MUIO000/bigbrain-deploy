@@ -365,4 +365,104 @@ const EditGame = () => {
           </Button>
         </div>
 
-    
+        {questions.length === 0 ? (
+          <p className="text-gray-600">
+            No questions added yet. Add your first question!
+          </p>
+        ) : (
+          <div className="space-y-4">
+            {questions.map((question, index) => (
+              <div
+                key={index}
+                className="border rounded-lg p-4 hover:bg-gray-50 transition-colors duration-200"
+              >
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="font-semibold text-lg">
+                      {question.text || `Question ${index + 1}`}
+                    </h3>
+                    <p className="text-gray-600 text-sm">
+                      Type: {question.type || "Single Choice"} | Time:{" "}
+                      {question.timeLimit || 30}s | Points:{" "}
+                      {question.points || 10}
+                    </p>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="outline"
+                      size="small"
+                      className="text-blue-600 border-blue-600 hover:bg-blue-100"
+                      onClick={() => handleNavigateToQuestion(index)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="danger"
+                      size="small"
+                      className="bg-red-600 text-white hover:bg-red-700"
+                      onClick={() => handleDeleteQuestion(index)}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {openNewQuestionDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6">
+            <h2 className="text-xl font-semibold mb-4 text-blue-800">
+              Add New Question
+            </h2>
+            <div className="mb-4">
+              <label className="block text-gray-700 mb-2">Question Type</label>
+              <select
+                className="w-full p-2 border rounded-md"
+                value={newQuestionType}
+                onChange={(e) => setNewQuestionType(e.target.value)}
+              >
+                <option value="single">Single Choice</option>
+                <option value="multiple">Multiple Choice</option>
+                <option value="judgement">Judgement</option>
+              </select>
+            </div>
+            <div className="flex justify-end space-x-2 mt-6">
+              <Button
+                variant="secondary"
+                className="bg-gray-600 text-white hover:bg-gray-700"
+                onClick={() => setOpenNewQuestionDialog(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                className="bg-blue-600 text-white hover:bg-blue-700"
+                onClick={handleAddQuestion}
+              >
+                Create
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <ErrorPopup
+        message={error}
+        show={showError}
+        onClose={() => setShowError(false)}
+      />
+
+      <SuccessPopup
+        message={success}
+        show={showSuccess}
+        onClose={() => setShowSuccess(false)}
+      />
+    </div>
+  );
+};
+
+export default EditGame;
