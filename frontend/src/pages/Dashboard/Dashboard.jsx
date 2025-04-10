@@ -448,6 +448,35 @@ const Dashboard = () => {
         </div>
       )}
 
+      {showStopSessionDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6">
+            <h2 className="text-xl font-semibold mb-4 text-blue-800">
+              Game Session Stopped
+            </h2>
+            <p className="text-gray-700 mb-4">
+              The game session has been stopped. Would you like to view the results?
+            </p>
+            <div className="flex justify-end space-x-2 mt-6">
+              <Button
+                variant="secondary"
+                className="bg-gray-600 text-white hover:bg-gray-700"
+                onClick={handleCloseStopSessionDialog}
+              >
+                Close
+              </Button>
+              <Button
+                variant="primary"
+                className="bg-blue-600 text-white hover:bg-blue-700"
+                onClick={handleViewResults}
+              >
+                View Results
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <StartSessionPopup
         sessionId={activeSession}
         show={showSessionPopup}
