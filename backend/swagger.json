@@ -46,10 +46,6 @@
             "type": "string",
             "format": "password",
             "example": "adummypassword"
-          },
-          "name": {
-            "type": "string",
-            "example": "Harry Jenkins"
           }
         }
       },
