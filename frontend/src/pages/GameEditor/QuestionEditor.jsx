@@ -183,6 +183,178 @@ const QuestionEditor = () => {
         attachmentUrl: attachmentUrl.trim() || null,
       };
 
+      // 更新游戏中的问题
+      const updatedQuestions = [...(currentGame.questions || [])];
+      if (updatedQuestions.length <= numQuestionId) {
+        // 如果需要，添加空的问题
+        for (let i = updatedQuestions.length; i <= numQuestionId; i++) {
+          updatedQuestions.push({});
+        }
+      }
+      updatedQuestions[numQuestionId] = updatedQuestion;
+
+      // 创建更新后的游戏对象，保留所有字段
+      const updatedGame = {
+        ...currentGame, // 保留所有原始字段
+        questions: updatedQuestions, // 更新问题列表
+      };
+
+      // 获取最新的游戏列表
+      const gamesData = await getAllGames(token);
+      if (gamesData && Array.isArray(gamesData.games)) {
+        // 使用完整的游戏对象更新
+        const updatedGames = gamesData.games.map(game =>
+          String(game.id) === String(currentGame.id) ? updatedGame : game
+        );
+
+        // 调用 API 更新后端数据
+        await updateGames(token, updatedGames);
+
+        // 重新获取最新的游戏数据
+        const refreshedData = await getAllGames(token);
+        if (refreshedData && refreshedData.games) {
+          setAllGames(refreshedData.games);
+          const refreshedGame = refreshedData.games.find(g => g.id === numGameId);
+          if (refreshedGame) {
+            setCurrentGame(refreshedGame);
+            if (refreshedGame.questions && refreshedGame.questions[numQuestionId]) {
+              setCurrentQuestion(refreshedGame.questions[numQuestionId]);
+            }
+          }
+        }
+
+        setSuccess("Question saved successfully");
+        setShowSuccess(true);
+      } else {
+        throw new Error("Failed to update game");
+      }
+    } catch (error) {
+      console.error("Error saving question:", error);
+      setError(error.message || "Failed to save question");
+      setShowError(true);
+    }
+  };
+
+  // 修改 handleAddAnswer 和 handleDeleteAnswer 函数
+  const handleAddAnswer = () => {
+    // 判断题不允许添加更多答案
+    if (questionType === "judgement") {
+      setError("Judgement questions can only have one answer");
+      setShowError(true);
+      return;
+    }
+
+    if (answers.length >= 6) {
+      setError("Maximum of 6 answers allowed");
+      setShowError(true);
+      return;
+    }
+
+    const newId = Math.max(0, ...answers.map(a => a.id)) + 1;
+    const newAnswer = { 
+      id: newId, 
+      text: `Answer ${answers.length + 1}`, 
+      isCorrect: false 
+    };
+    setAnswers([...answers, newAnswer]);
+  };
+
+  const handleDeleteAnswer = (answerId) => {
+    // 判断题不允许删除答案
+    if (questionType === "judgement") {
+      setError("Judgement questions must have exactly one answer");
+      setShowError(true);
+      return;
+    }
+
+    if (answers.length <= 2) {
+      setError("Minimum of 2 answers required");
+      setShowError(true);
+      return;
+    }
+
+    const updatedAnswers = answers.filter(a => a.id !== answerId);
+    setAnswers(updatedAnswers);
+  };
+
+  const handleAnswerTextChange = (answerId, text) => {
+    const updatedAnswers = answers.map(a =>
+      a.id === answerId ? { ...a, text } : a
+    );
+    setAnswers(updatedAnswers);
+  };
+
+  // 修改 handleAnswerCorrectChange 函数，使判断题可以切换正确性
+  const handleAnswerCorrectChange = (answerId, isCorrect) => {
+    let updatedAnswers = [...answers];
+    
+    if (questionType === "judgement") {
+      // 判断题可以切换答案的正确性（反转当前状态）
+      updatedAnswers = updatedAnswers.map(a =>
+        a.id === answerId ? { ...a, isCorrect: !a.isCorrect } : a
+      );
+    } else if (questionType === "single" && isCorrect) {
+      // 单选题逻辑保持不变
+      updatedAnswers = updatedAnswers.map(a =>
+        a.id === answerId ? { ...a, isCorrect: true } : { ...a, isCorrect: false }
+      );
+    } else {
+      // 多选题逻辑保持不变
+      updatedAnswers = updatedAnswers.map(a =>
+        a.id === answerId ? { ...a, isCorrect } : a
+      );
+    }
+    
+    setAnswers(updatedAnswers);
+  };
+
+  const handleBackToGame = () => {
+    navigate(`/game/${gameId}`);
+  };
+
+  if (loading) {
+    return <div className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 min-h-screen flex justify-center items-center">
+      <div className="text-blue-600 text-xl">Loading question data...</div>
+    </div>;
+  }
+
+  return (
+    <div className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 min-h-screen">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-blue-800">
+          Edit Question {parseInt(questionId, 10) + 1}
+        </h1>
+        <Button
+          variant="secondary"
+          className="bg-gray-600 text-white hover:bg-gray-700"
+          onClick={handleBackToGame}
+        >
+          Back to Game
+        </Button>
+      </div>
+
+      <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+        <div className="mb-4">
+          <h2 className="text-xl font-semibold mb-4 text-blue-800">Question Details</h2>
+          <InputField
+            label="Question Text"
+            id="questionText"
+            value={questionText}
+            onChange={(e) => setQuestionText(e.target.value)}
+            placeholder="Enter question text"
+            required
+          />
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3 mb-4">
+          <div>
+            <label className="block text-gray-700 mb-2 -mt-1.5">Question Type</label>
+            <select
+              className="w-full p-2 border rounded-md"
+              value={questionType}
+              onChange={(e) => setQuestionType(e.target.value)}
+            >
+
   );
 };
 
