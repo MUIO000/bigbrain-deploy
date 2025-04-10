@@ -155,7 +155,7 @@ const Login = () => {
                       Loading...
                     </div>
                   ) : (
-                    "Start Game"
+                    "Login"
                   )}
                 </Button>
               </div>

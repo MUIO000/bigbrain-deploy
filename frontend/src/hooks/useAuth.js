@@ -11,8 +11,11 @@ export const useAuth = () => {
     setLoading(true);
     try {
       const res = await loginApi(email, password, name);
-      // The token is stored in local storage by the login function in AuthContext
-      login(res.token, email);
+      if (res.token) {
+        // The token is stored in local storage by the login function in AuthContext
+        login(res.token, email);
+        return true; // Indicate successful login
+      }
     } catch (err) {
       setError(err.response?.data?.error || 'Login failed');
     } finally {
@@ -24,7 +27,11 @@ export const useAuth = () => {
     setLoading(true);
     try {
       const res = await registerApi(email, password, name);
-      login(res.token);
+      if (res.token) {
+        // The token is stored in local storage by the login function in AuthContext
+        login(res.token, email);
+        return true; // Indicate successful login
+      }
     } catch (err) {
       setError(err.response?.data?.error || 'Registration failed');
     } finally {

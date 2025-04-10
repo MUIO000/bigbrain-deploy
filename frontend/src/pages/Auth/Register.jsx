@@ -45,7 +45,7 @@ const Register = () => {
 
   return (
     <div className="min-h-screen flex flex-col justify-center items-center bg-gradient-to-b from-indigo-900 via-purple-900 to-indigo-800 p-4 overflow-hidden relative">
-      {/* 装饰元素 - 大脑图标 */}
+      {/* brain SVG */}
       <div className="absolute z-0 opacity-5 animate-pulse">
         <svg xmlns="http://www.w3.org/2000/svg" className="h-96 w-96 text-blue-200" viewBox="0 0 20 20" fill="currentColor">
           <path d="M3 12v3c0 1.657 3.134 3 7 3s7-1.343 7-3v-3c0 1.657-3.134 3-7 3s-7-1.343-7-3z" />
@@ -54,7 +54,7 @@ const Register = () => {
         </svg>
       </div>
       
-      {/* 浮动粒子背景 */}
+      {/* floating bubbles */}
       <div className="absolute inset-0 overflow-hidden">
         {[...Array(10)].map((_, i) => (
           <div 
@@ -84,7 +84,7 @@ const Register = () => {
       
       <div className="w-full max-w-md z-10">
         <div className="backdrop-blur-sm bg-white bg-opacity-10 rounded-2xl border border-white border-opacity-20 shadow-2xl overflow-hidden">
-          {/* 顶部装饰条 */}
+          {/* top gradient */}
           <div className="h-2 w-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
           <div className="p-6 sm:p-8">
             <h2 className="text-2xl font-bold text-black text-center mb-6">Join the Brain Game!</h2>
