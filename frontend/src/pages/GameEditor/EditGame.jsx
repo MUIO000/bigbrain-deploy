@@ -143,7 +143,6 @@ const EditGame = () => {
         type: newQuestionType,
         answers: [
           { id: 1, text: "Answer 1", isCorrect: true },
-          { id: 2, text: "Answer 2", isCorrect: false },
         ],
         attachmentType: null,
         attachmentUrl: null,
