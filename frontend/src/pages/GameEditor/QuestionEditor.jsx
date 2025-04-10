@@ -354,7 +354,158 @@ const QuestionEditor = () => {
               value={questionType}
               onChange={(e) => setQuestionType(e.target.value)}
             >
+              <option value="single">Single Choice</option>
+              <option value="multiple">Multiple Choice</option>
+              <option value="judgement">Judgement</option>
+            </select>
+          </div>
+          <div>
+            <InputField
+              label="Time Limit (seconds)"
+              id="timeLimit"
+              value={timeLimit}
+              onChange={(e) => setTimeLimit(e.target.value)}
+              type="number"
+              min="1"
+              required
+            />
+          </div>
+          <div>
+            <InputField
+              label="Points"
+              id="points"
+              value={points}
+              onChange={(e) => setPoints(e.target.value)}
+              type="number"
+              min="1"
+              required
+            />
+          </div>
+        </div>
 
+        <div className="mb-4">
+          <h3 className="font-semibold mb-2">Attachment</h3>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div>
+              <label className="block text-gray-700 mb-2">Attachment Type</label>
+              <select
+                className="w-full p-2 border rounded-md "
+                value={attachmentType}
+                onChange={(e) => setAttachmentType(e.target.value)}
+              >
+                <option value="none">None</option>
+                <option value="youtube">YouTube Video</option>
+                <option value="image">Image</option>
+              </select>
+            </div>
+            <div>
+              {attachmentType !== "none" && (
+                <InputField
+                  label={attachmentType === "youtube" ? "YouTube URL" : "Image URL"}
+                  id="attachmentUrl"
+                  value={attachmentUrl}
+                  onChange={(e) => setAttachmentUrl(e.target.value)}
+                  placeholder={
+                    attachmentType === "youtube"
+                      ? "Enter YouTube video URL"
+                      : "Enter image URL"
+                  }
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+        {/* 修改 Answers 部分的标题和添加按钮 */}
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="font-semibold">
+            {questionType === "judgement" ? "Judgement" : `Answers (${answers.length}/6)`}
+          </h3>
+          {questionType !== "judgement" && (
+            <Button
+              variant="primary"
+              size="small"
+              className="bg-blue-600 text-white hover:bg-blue-700"
+              onClick={handleAddAnswer}
+              disabled={answers.length >= 6}
+            >
+              Add Answer
+            </Button>
+          )}
+        </div>
+
+        {/* 修改答案选项的渲染 */}
+        {answers.map((answer) => (
+          <div
+            key={answer.id}
+            className="border rounded p-4 mb-3 hover:bg-gray-50 transition-colors duration-200"
+          >
+            <div className="flex items-start">
+              <div className="flex-grow mr-4">
+                <InputField
+                  label={questionType === "judgement" ? "True/False Statement" : `Answer ${answer.id}`}
+                  id={`answer-${answer.id}`}
+                  value={answer.text}
+                  onChange={(e) => handleAnswerTextChange(answer.id, e.target.value)}
+                  placeholder={questionType === "judgement" ? "Enter true/false statement" : "Enter answer text"}
+                  required
+                  disabled={questionType === "judgement"} // 判断题不能编辑答案文本
+                />
+              </div>
+              <div className="flex items-center mt-8 space-x-4">
+                <div className="flex items-center">
+                  <input
+                    type={questionType === "judgement" ? "checkbox" : (questionType === "multiple" ? "checkbox" : "radio")}
+                    id={`correct-${answer.id}`}
+                    checked={answer.isCorrect}
+                    onChange={(e) => handleAnswerCorrectChange(answer.id, e.target.checked)}
+                    className="mr-2"
+                  />
+                  <label htmlFor={`correct-${answer.id}`}>
+                    {questionType === "judgement" ? (answer.isCorrect ? "True" : "False") : "Correct"}
+                  </label>
+                </div>
+                {questionType !== "judgement" && (
+                  <Button
+                    variant="danger"
+                    size="small"
+                    className="bg-red-600 text-white hover:bg-red-700"
+                    onClick={() => handleDeleteAnswer(answer.id)}
+                    disabled={answers.length <= 2}
+                  >
+                    Delete
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+
+        <div className="mt-6">
+          <Button
+            variant="primary"
+            className="bg-blue-600 text-white hover:bg-blue-700"
+            onClick={handleSaveQuestion}
+          >
+            Save Question
+          </Button>
+        </div>
+      </div>
+
+      <ErrorPopup
+        message={error}
+        show={showError}
+        onClose={() => setShowError(false)}
+      />
+      
+      <SuccessPopup
+        message={success}
+        show={showSuccess}
+        onClose={() => setShowSuccess(false)}
+      />
+    </div>
   );
 };
 
