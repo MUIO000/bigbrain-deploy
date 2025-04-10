@@ -3,9 +3,10 @@ import { useNavigate } from "react-router-dom";
 import Button from "../../components/Button";
 import InputField from "../../components/InputField";
 import ErrorPopup from "../../components/ErrorPopup";
-import SuccessPopup from "../../components/SuccessPopup"; 
-import { getAllGames, updateGames } from "../../api/gameApi";
+import SuccessPopup from "../../components/SuccessPopup";
+import { getAllGames, updateGames, mutateGameState } from "../../api/gameApi";
 import { AuthContext } from "../../contexts/AuthContext";
+import StartSessionPopup from "../../components/StartSessionPopup";
 
 const Dashboard = () => {
   const [games, setGames] = useState([]);
@@ -18,7 +19,15 @@ const Dashboard = () => {
   const [showError, setShowError] = useState(false);
   const [success, setSuccess] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
-  
+
+  // game session state
+  const [activeSession, setActiveSession] = useState(null);
+  const [showSessionPopup, setShowSessionPopup] = useState(false);
+
+  // 添加停止会话的功能
+  const [showStopSessionDialog, setShowStopSessionDialog] = useState(false);
+  const [stoppedSessionId, setStoppedSessionId] = useState(null);
+
   const navigate = useNavigate();
   const { email, logout } = useContext(AuthContext);
 
@@ -73,7 +82,7 @@ const Dashboard = () => {
 
       setOpenNewGameDialog(false);
       setNewGameName("");
-      
+
       setSuccess("Game created successfully");
       setShowSuccess(true);
     } catch (error) {
@@ -100,7 +109,7 @@ const Dashboard = () => {
 
       setOpenDeleteDialog(false);
       setSelectedGameId(null);
-      
+
       setSuccess("Game deleted successfully");
       setShowSuccess(true);
     } catch (error) {
@@ -131,6 +140,107 @@ const Dashboard = () => {
     navigate("/login");
   };
 
+  const handleStartSession = async (gameIndex) => {
+    try {
+      const gameId = games[gameIndex].id;
+
+      // Check if the game is already active
+      if (games[gameIndex].active) {
+        setError(
+          `Game "${games[gameIndex].name}" already has an active session`
+        );
+        setShowError(true);
+        return;
+      }
+
+      // Start the game session
+      const res = await mutateGameState(token, gameId, "START");
+      const response = res.data || res;
+
+      // 更新状态
+      if (response && response.sessionId) {
+        console.log("成功开启游戏");
+        // 为了在UI中反映变化，更新本地游戏数据
+        const updatedGames = [...games];
+        updatedGames[gameIndex] = {
+          ...updatedGames[gameIndex],
+          active: response.sessionId,
+        };
+        setGames(updatedGames);
+
+        // 设置活跃游戏和会话
+        setActiveSession(response.sessionId);
+
+        // 显示会话信息弹窗
+        setShowSessionPopup(true);
+      }
+    } catch (error) {
+      setError(
+        `Failed to start game session: ${error.message || "Unknown error"}`
+      );
+      setShowError(true);
+    }
+  };
+
+  // 添加停止会话函数
+  const handleStopSession = async (gameIndex) => {
+    try {
+      const gameId = games[gameIndex].id;
+      const sessionId = games[gameIndex].active;
+      
+      if (!sessionId) {
+        setError(`Game "${games[gameIndex].name}" doesn't have an active session`);
+        setShowError(true);
+        return;
+      }
+      
+      // 调用API停止游戏会话
+      await mutateGameState(token, gameId, "END");
+      
+      // 更新本地状态
+      const updatedGames = [...games];
+      updatedGames[gameIndex] = {
+        ...updatedGames[gameIndex],
+        active: null
+      };
+      setGames(updatedGames);
+      
+      // 设置当前停止的会话ID，用于弹窗
+      setStoppedSessionId(sessionId);
+      
+      // 显示停止会话确认弹窗
+      setShowStopSessionDialog(true);
+      
+    } catch (error) {
+      setError(`Failed to stop game session: ${error.message || "Unknown error"}`);
+      setShowError(true);
+    }
+  };
+
+  // 添加查看结果的函数
+  const handleViewResults = () => {
+    // 使用activeGameIndex和stoppedSessionId导航到结果页面
+    navigate(`/session/${stoppedSessionId}`);
+    setShowStopSessionDialog(false);
+  };
+
+  // 关闭会话弹窗
+  const handleCloseSessionPopup = () => {
+    setShowSessionPopup(false);
+  };
+
+  // 关闭停止会话弹窗
+  const handleCloseStopSessionDialog = () => {
+    setShowStopSessionDialog(false);
+    setStoppedSessionId(null);
+  };
+
+  // 确认删除游戏
+  const handleConfirmDelete = (index) => {
+    setSelectedGameId(index);
+    setOpenDeleteDialog(true);
+  };
+
   return (
     <div className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 min-h-screen">
       <div className="flex justify-between items-center mb-6">
@@ -156,15 +266,27 @@ const Dashboard = () => {
       {loading ? (
         <p className="text-blue-600">Loading games...</p>
       ) : games.length === 0 ? (
-        <p className="text-blue-600">No games available. Create your first game!</p>
+        <p className="text-blue-600">
+          No games available. Create your first game!
+        </p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {games.map((game, index) => {
             const { questionCount, totalDuration } = getGameStats(game);
+            const isActive = Boolean(game.active);
+            
             return (
               <div
                 key={index}
-                className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
+                className={`bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 ${
+                  isActive ? 'bg-green-50' : ''
+                }`}
+                style={{
+                  boxShadow: isActive 
+                    ? '0 0 15px 5px rgba(52, 211, 153, 0.3)' 
+                    : undefined,
+                  transition: 'all 0.3s ease-in-out'
+                }}
               >
                 <div
                   className="h-36 bg-cover bg-center flex items-center justify-center"
@@ -172,44 +294,88 @@ const Dashboard = () => {
                     backgroundImage: game.thumbnail
                       ? `url(${game.thumbnail})`
                       : "none",
-                    backgroundColor: game.thumbnail ? "transparent" : "#e0e0e0",
+                    backgroundColor: game.thumbnail 
+                      ? "transparent" 
+                      : isActive ? "#dcfce7" : "#e0e0e0",
                   }}
                 >
                   {!game.thumbnail && (
-                    <span className="text-gray-500 text-lg">No Thumbnail</span>
+                    <span className={isActive ? "text-green-700 text-lg" : "text-gray-500 text-lg"}>
+                      {isActive ? 'Active Session' : 'No Thumbnail'}
+                    </span>
                   )}
                 </div>
-                <div className="p-4">
-                  <h2 className="text-xl font-semibold mb-2 text-blue-800">
+                <div className={isActive ? "p-4 bg-green-50" : "p-4"}>
+                  <h2 className={`text-xl font-semibold mb-2 ${
+                    isActive ? 'text-green-800' : 'text-blue-800'
+                  }`}>
                     {game.name}
                   </h2>
-                  <p className="text-gray-600 text-sm">
+                  <p className={`text-sm ${isActive ? 'text-green-600' : 'text-gray-600'}`}>
                     Questions: {questionCount}
                   </p>
-                  <p className="text-gray-600 text-sm">
+                  <p className={`text-sm ${isActive ? 'text-green-600' : 'text-gray-600'}`}>
                     Duration: {totalDuration} seconds
                   </p>
+                  {isActive && (
+                    <div className="mt-2 flex items-center">
+                      <span 
+                        className="w-2 h-2 rounded-full bg-green-500 mr-2"
+                        style={{ 
+                          animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                          boxShadow: '0 0 5px rgba(52, 211, 153, 0.5)'
+                        }}
+                      ></span>
+                      <p className="text-sm font-medium text-green-600">
+                        Session ID: {game.active}
+                      </p>
+                    </div>
+                  )}
                 </div>
-                <div className="flex justify-between p-3 border-t">
+                <div className={`flex justify-between p-3 border-t ${
+                  isActive ? 'border-green-200 bg-green-50' : ''
+                }`}>
                   <Button
                     variant="outline"
                     size="small"
-                    className="text-blue-600 border-blue-600 hover:bg-blue-100"
+                    className={isActive 
+                      ? "text-green-600 border-green-600 hover:bg-green-100" 
+                      : "text-blue-600 border-blue-600 hover:bg-blue-100"}
                     onClick={() => navigateToGame(game)}
+                    disabled={isActive}
                   >
                     Edit
                   </Button>
-                  <Button
-                    variant="danger"
-                    size="small"
-                    className="bg-red-600 text-white hover:bg-red-700"
-                    onClick={() => {
-                      setSelectedGameId(index);
-                      setOpenDeleteDialog(true);
-                    }}
-                  >
-                    Delete
-                  </Button>
+                  <div className="flex space-x-2">
+                    {!isActive ? (
+                      <Button
+                        variant="success"
+                        size="small"
+                        className="bg-green-600 text-white hover:bg-green-700"
+                        onClick={() => handleStartSession(index)}
+                      >
+                        Start
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="warning"
+                        size="small"
+                        className="bg-yellow-600 text-white hover:bg-yellow-700"
+                        onClick={() => handleStopSession(index)}
+                      >
+                        Stop
+                      </Button>
+                    )}
+                    <Button
+                      variant="danger"
+                      size="small"
+                      className="bg-red-600 text-white hover:bg-red-700"
+                      onClick={() => handleConfirmDelete(index)}
+                      disabled={isActive}
+                    >
+                      Delete
+                    </Button>
+                  </div>
                 </div>
               </div>
             );
@@ -282,12 +448,18 @@ const Dashboard = () => {
         </div>
       )}
 
+      <StartSessionPopup
+        sessionId={activeSession}
+        show={showSessionPopup}
+        onClose={handleCloseSessionPopup}
+      />
+
       <ErrorPopup
         message={error}
         show={showError}
         onClose={() => setShowError(false)}
       />
-      
+
       <SuccessPopup
         message={success}
         show={showSuccess}
