@@ -7,6 +7,7 @@ This assignment is due Friday the 25th of April, 8pm.
 ## Change Log
 
 * 09/04: Updated typos in spec (headers, bad sum of marks); removed custom.js to simplify; better defined a structure; made clearer what is and isn't required in the main game blob.
+* 11/04: Fix bug on backend where questions & answers were not being returned correctly.
 
 ## 1. Setup
 
