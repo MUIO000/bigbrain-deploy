@@ -183,7 +183,44 @@ const PlayerGame = () => {
   }
 
   return (
+    <div className="bg-gradient-to-br from-blue-50 to-blue-100 min-h-screen p-6">
+      <div className="max-w-3xl mx-auto">
+        <div className="mb-4 flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-blue-800">
+            玩家: {playerName || "Anonymous"}
+          </h1>
+          <Button
+            variant="secondary"
+            size="small"
+            className="bg-gray-600 text-white hover:bg-gray-700"
+            onClick={handleLeaveGame}
+          >
+            离开游戏
+          </Button>
+        </div>
 
+        {question ? (
+          <PlayerQuestion
+            question={question}
+            onAnswerSubmit={handleSubmitAnswers}
+            timeRemaining={timeRemaining}
+          />
+        ) : (
+          <div className="bg-white rounded-lg shadow-lg p-6 text-center">
+            <div className="flex justify-center">
+              <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+            <p className="mt-4 text-gray-600">加载问题中...</p>
+          </div>
+        )}
+      </div>
+
+      <ErrorPopup
+        message={error}
+        show={showError}
+        onClose={() => setShowError(false)}
+      />
+    </div>
   );
 };
 
