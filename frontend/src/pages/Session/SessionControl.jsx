@@ -177,6 +177,182 @@ const SessionControl = ({ sessionId, sessionData: initialData }) => {
     }
   };
 
+  // 计算进度信息
+  const position = sessionData.position;
+  const totalQuestions = sessionData?.questions?.length || 0;
+
+  // 获取当前问题，处理可能的嵌套格式
+  let currentQuestion = null;
+  if (position >= 0 && sessionData?.questions && position < totalQuestions) {
+    currentQuestion = extractQuestionFromFormat(sessionData.questions[position]);
+  }
+
+  const isGameStarted = position >= 0;
+
+  return (
+    <div className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 min-h-screen">
+      <div className="max-w-4xl mx-auto">
+        <div className="flex justify-end space-x-2 mb-4">
+          <Button
+            variant="secondary"
+            className="bg-gray-600 text-white hover:bg-gray-700"
+            onClick={handleBackDashboard}
+          >
+            Dashboard
+          </Button>
+          <Button
+            variant="secondary"
+            className="bg-red-600 text-white hover:bg-red-700"
+            onClick={handleLogout}
+          >
+            Logout
+          </Button>
+        </div>
+
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold text-blue-800">Session Control</h1>
+          <Button
+            variant="danger"
+            className="bg-red-600 text-white hover:bg-red-700"
+            onClick={handleEndSession}
+          >
+            End Session
+          </Button>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+          <div className="flex justify-between items-center mb-4">
+            <div>
+              <h2 className="text-xl font-semibold text-blue-800">
+                {isGameStarted
+                  ? `Question ${position + 1}/${totalQuestions}`
+                  : "Game Ready"}
+              </h2>
+              <p className="text-sm text-gray-600">
+                {isGameStarted
+                  ? "Game in progress"
+                  : 'Click "Start Game" to begin'}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm text-gray-600">Players connected:</p>
+              <p className="text-xl font-semibold text-blue-800">
+                {Object.keys(sessionData?.players || {}).length}
+              </p>
+            </div>
+          </div>
+
+          {isGameStarted && currentQuestion && (
+            <div className="mb-6">
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="font-semibold text-lg">Current Question</h3>
+                {timeRemaining !== null && (
+                  <div
+                    className={`px-4 py-1 rounded-full ${
+                      timeRemaining > 10
+                        ? "bg-green-100 text-green-800"
+                        : timeRemaining > 5
+                        ? "bg-yellow-100 text-yellow-800"
+                        : "bg-red-100 text-red-800 animate-pulse"
+                    }`}
+                  >
+                    {timeRemaining}s remaining
+                  </div>
+                )}
+              </div>
+
+              <p className="text-lg mb-4">{currentQuestion.text}</p>
+
+              {currentQuestion.attachmentType === "image" &&
+                currentQuestion.attachmentUrl && (
+                  <div className="mb-4">
+                    <img
+                      src={currentQuestion.attachmentUrl}
+                      alt="Question attachment"
+                      className="max-w-full rounded-lg"
+                    />
+                  </div>
+                )}
+
+              {currentQuestion.attachmentType === "youtube" &&
+                currentQuestion.attachmentUrl && (
+                  <div className="mb-4">
+                    <div className="aspect-w-16 aspect-h-9">
+                      <iframe
+                        src={`https://www.youtube.com/embed/${getYoutubeVideoId(
+                          currentQuestion.attachmentUrl
+                        )}`}
+                        title="YouTube video"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        className="rounded-lg w-full h-64"
+                      ></iframe>
+                    </div>
+                  </div>
+                )}
+
+              <div className="mt-6">
+                <h4 className="font-medium mb-2">Answer Options:</h4>
+                {currentQuestion.type === "judgement" ? (
+                  <div className="grid grid-cols-1 gap-2">
+                    <div
+                      className={`p-3 border rounded-lg ${
+                        Array.isArray(currentQuestion.correctAnswers) &&
+                        currentQuestion.correctAnswers.includes("True/False")
+                          ? "border-green-300 bg-green-50"
+                          : "border-gray-300 bg-gray-50"
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        <span className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center mr-2">
+                          ✓
+                        </span>
+                        <span>True</span>
+                      </div>
+                    </div>
+                    <div
+                      className={`p-3 border rounded-lg ${
+                        !Array.isArray(currentQuestion.correctAnswers) ||
+                        currentQuestion.correctAnswers.length === 0
+                          ? "border-green-300 bg-green-50"
+                          : "border-gray-300 bg-gray-50"
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        <span className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center mr-2">
+                          ✗
+                        </span>
+                        <span>False</span>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {/* 使用新的 Answers 格式 */}
+                    {Array.isArray(currentQuestion.Answers) &&
+                      currentQuestion.Answers.map((answerObj, i) => {
+                        // 从 Answers 中获取答案文本
+                        const answerText = answerObj.Answer;
+                        return (
+                          <div
+                            key={i}
+                            className={`p-3 border rounded-lg ${
+                              Array.isArray(currentQuestion.correctAnswers) &&
+                              currentQuestion.correctAnswers.includes(answerText)
+                                ? "border-green-300 bg-green-50"
+                                : "border-gray-300 bg-gray-50"
+                            }`}
+                          >
+                            <div className="flex items-center">
+                              <span className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center mr-2">
+                                {i + 1}
+                              </span>
+                              <span>{answerText}</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    
 
   );
 };
