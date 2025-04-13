@@ -177,7 +177,51 @@ const SessionResults = ({ sessionId }) => {
             
             const correctPercentage = totalAnswers > 0 ? Math.round((correctAnswers / totalAnswers) * 100) : 0;
             
-
+            return (
+              <div key={index} className="border-b pb-4 mb-4 last:border-0 last:pb-0 last:mb-0">
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="font-medium">
+                    Question {index + 1}: {question.text}
+                  </h3>
+                  <div className={`px-3 py-1 rounded-full text-sm ${
+                    correctPercentage > 70 ? 'bg-green-100 text-green-800' :
+                    correctPercentage > 40 ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-red-100 text-red-800'
+                  }`}>
+                    {correctPercentage}% correct
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600">
+                  {correctAnswers} out of {totalAnswers} players answered correctly
+                </p>
+                
+                {/* 显示问题的正确答案 */}
+                <div className="mt-2">
+                  <p className="text-sm font-medium text-gray-700">Correct answer(s):</p>
+                  {question.type === "judgement" ? (
+                    <p className="text-sm">
+                      {Array.isArray(question.correctAnswers) && question.correctAnswers.length > 0 ? "True" : "False"}
+                    </p>
+                  ) : (
+                    <ul className="list-disc pl-5 text-sm">
+                      {Array.isArray(question.correctAnswers) && question.correctAnswers.map((answer, i) => (
+                        <li key={i}>{answer}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      
+      <ErrorPopup
+        message={error}
+        show={showError}
+        onClose={() => setShowError(false)}
+      />
+    </div>
   );
 };
 
