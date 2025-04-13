@@ -353,7 +353,84 @@ const SessionControl = ({ sessionId, sessionData: initialData }) => {
                         );
                       })}
                     
+                    {/* 兼容旧格式 answers */}
+                    {Array.isArray(currentQuestion.answers) && !Array.isArray(currentQuestion.Answers) &&
+                      currentQuestion.answers.map((answer, i) => (
+                        <div
+                          key={i}
+                          className={`p-3 border rounded-lg ${
+                            Array.isArray(currentQuestion.correctAnswers) &&
+                            currentQuestion.correctAnswers.includes(answer.text)
+                              ? "border-green-300 bg-green-50"
+                              : "border-gray-300 bg-gray-50"
+                          }`}
+                        >
+                          <div className="flex items-center">
+                            <span className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center mr-2">
+                              {i + 1}
+                            </span>
+                            <span>{answer.text}</span>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
+          <div className="mt-6">
+            <Button
+              variant="primary"
+              className="bg-blue-600 text-white hover:bg-blue-700"
+              onClick={handleAdvance}
+            >
+              {isGameStarted ? "Next Question" : "Start Game"}
+            </Button>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <h3 className="font-semibold text-lg mb-3">Session Information</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm text-gray-600">Session ID:</p>
+              <p className="font-mono">{sessionId}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Status:</p>
+              <p
+                className={isGameStarted ? "text-green-600" : "text-yellow-600"}
+              >
+                {isGameStarted ? "Active" : "Ready to start"}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Game ID:</p>
+              <p className="font-mono">{gameId || "Not available"}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Question Type:</p>
+              <p className="capitalize">
+                {currentQuestion?.type || "Not started"}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <ErrorPopup
+        message={error}
+        show={showError}
+        onClose={() => setShowError(false)}
+      />
+
+      <SuccessPopup
+        message={success}
+        show={showSuccess}
+        onClose={() => setShowSuccess(false)}
+      />
+    </div>
   );
 };
 
