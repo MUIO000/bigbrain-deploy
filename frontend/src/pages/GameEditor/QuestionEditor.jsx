@@ -5,6 +5,13 @@ import InputField from "../../components/InputField";
 import ErrorPopup from "../../components/ErrorPopup";
 import SuccessPopup from "../../components/SuccessPopup"; 
 import { getAllGames, updateGames } from "../../api/gameApi";
+import {
+  extractQuestionFromFormat,
+  prepareQuestionForSave,
+  prepareAnswersForDisplay,
+  formatQuestionForBackend,
+  createDefaultQuestion,
+} from '../../utils/questionFormatter';
 
 const QuestionEditor = () => {
   const { gameId, questionId } = useParams();
@@ -43,57 +50,39 @@ const QuestionEditor = () => {
         
         if (response && Array.isArray(response.games)) {
           setAllGames(response.games);
-          console.log("");
-          console.log("numGameId:", numGameId);
           const foundGame = response.games.find(g => g.id === numGameId);
           
           if (foundGame) {
             setCurrentGame(foundGame);
             
-            // Check if questions array exists and has the requested question
+            // 检查问题是否存在
             if (Array.isArray(foundGame.questions) && foundGame.questions[numQuestionId]) {
-              const question = foundGame.questions[numQuestionId];
+              // 使用工具函数提取问题对象
+              const question = extractQuestionFromFormat(foundGame.questions[numQuestionId]);
               setCurrentQuestion(question);
               
-              // Set form values from question data
-              setQuestionText(question.text || "");
-              setQuestionType(question.type || "single");
-              setTimeLimit(question.timeLimit || 30);
-              setPoints(question.points || 10);
+              // 设置表单值
+              setQuestionText(question?.text || "");
+              setQuestionType(question?.type || "single");
               
-              // Set answers
-              if (Array.isArray(question.answers) && question.answers.length > 0) {
-                setAnswers(question.answers);
-              } else {
-                // Default answers
-                setAnswers([
-                  { id: 1, text: "Answer 1", isCorrect: true },
-                  { id: 2, text: "Answer 2", isCorrect: false },
-                ]);
-              }
+              // 使用 duration 替代 timeLimit
+              setTimeLimit(question?.duration || question?.timeLimit || 30);
+              setPoints(question?.points || 10);
               
-              // Set attachment data
-              setAttachmentType(question.attachmentType || "none");
-              setAttachmentUrl(question.attachmentUrl || "");
+              // 设置答案选项
+              const answersWithCorrectFlag = prepareAnswersForDisplay(question);
+              setAnswers(answersWithCorrectFlag);
+              
+              // 设置附件数据
+              setAttachmentType(question?.attachmentType || "none");
+              setAttachmentUrl(question?.attachmentUrl || "");
             } else {
-              // Create a new question if it doesn't exist
-              const newQuestion = {
-                id: Date.now(),
-                text: "New Question",
-                type: "single",
-                timeLimit: 30,
-                points: 10,
-                answers: [
-                  { id: 1, text: "Answer 1", isCorrect: true },
-                  { id: 2, text: "Answer 2", isCorrect: false },
-                ],
-                attachmentType: "none",
-                attachmentUrl: "",
-              };
+              // 使用工具函数创建新问题的默认值
+              const newQuestion = createDefaultQuestion("single");
               
               setCurrentQuestion(newQuestion);
               setQuestionText(newQuestion.text);
-              setAnswers(newQuestion.answers);
+              setAnswers(prepareAnswersForDisplay(newQuestion));
             }
           } else {
             throw new Error("Game not found");
@@ -172,26 +161,29 @@ const QuestionEditor = () => {
       }
 
       // 创建更新后的问题对象
-      const updatedQuestion = {
+      const updatedQuestionObj = {
         id: currentQuestion?.id || Date.now(),
         text: questionText,
         type: questionType,
-        timeLimit: parseInt(timeLimit, 10),
+        duration: parseInt(timeLimit, 10), // 使用 duration 替代 timeLimit
         points: parseInt(points, 10),
-        answers: answers,
-        attachmentType: attachmentType !== "none" ? attachmentType : null,
-        attachmentUrl: attachmentUrl.trim() || null,
+        attachmentType: attachmentType !== "none" ? attachmentType : "",
+        attachmentUrl: attachmentUrl.trim() || "",
+        ...prepareQuestionForSave({}, answers)
       };
+
+      // 使用工具函数格式化问题为后端需要的嵌套格式
+      const formattedQuestion = formatQuestionForBackend(updatedQuestionObj);
 
       // 更新游戏中的问题
       const updatedQuestions = [...(currentGame.questions || [])];
       if (updatedQuestions.length <= numQuestionId) {
         // 如果需要，添加空的问题
         for (let i = updatedQuestions.length; i <= numQuestionId; i++) {
-          updatedQuestions.push({});
+          updatedQuestions.push(formatQuestionForBackend({}));
         }
       }
-      updatedQuestions[numQuestionId] = updatedQuestion;
+      updatedQuestions[numQuestionId] = formattedQuestion;
 
       // 创建更新后的游戏对象，保留所有字段
       const updatedGame = {
@@ -209,19 +201,6 @@ const QuestionEditor = () => {
 
         // 调用 API 更新后端数据
         await updateGames(token, updatedGames);
-
-        // 重新获取最新的游戏数据
-        const refreshedData = await getAllGames(token);
-        if (refreshedData && refreshedData.games) {
-          setAllGames(refreshedData.games);
-          const refreshedGame = refreshedData.games.find(g => g.id === numGameId);
-          if (refreshedGame) {
-            setCurrentGame(refreshedGame);
-            if (refreshedGame.questions && refreshedGame.questions[numQuestionId]) {
-              setCurrentQuestion(refreshedGame.questions[numQuestionId]);
-            }
-          }
-        }
 
         setSuccess("Question saved successfully");
         setShowSuccess(true);
