@@ -171,7 +171,94 @@ const PlayGame = () => {
         // 单选题，只保留最新选择的答案内容
         newSelectedAnswers = [answer];
         
- 
+        // 自动提交单选题答案
+        setSelectedAnswers(newSelectedAnswers);
+        await submitAnswer(newSelectedAnswers);
+        fetchCorrectAnswers(); // 单选题自动提交后获取正确答案
+      } else if (question.type === 'multiple') {
+        // 多选题，切换选择状态
+        if (selectedAnswers.includes(answer)) {
+          newSelectedAnswers = selectedAnswers.filter(a => a !== answer);
+        } else {
+          newSelectedAnswers = [...selectedAnswers, answer];
+        }
+        setSelectedAnswers(newSelectedAnswers);
+        // 多选题不自动提交，需等待用户手动提交
+      } else if (question.type === 'judgement') {
+        // 判断题特殊处理
+        // True 时使用 "True/False" 作为答案，False 时使用空数组
+        if (answer === true) {
+          newSelectedAnswers = ["True/False"];
+        } else {
+          newSelectedAnswers = [];
+        }
+        
+        // 判断题也自动提交
+        setSelectedAnswers(newSelectedAnswers);
+        await submitAnswer(newSelectedAnswers);
+        fetchCorrectAnswers(); // 判断题自动提交后获取正确答案
+      }
+      
+    } catch (error) {
+      console.error('Error handling answer selection:', error);
+      setError('Failed to process answer');
+      setShowError(true);
+    }
+  };
+  
+  // 手动提交多选题答案
+  const handleSubmitAnswers = async () => {
+    if (hasSubmittedRef.current || question.type !== 'multiple') return;
+    
+    try {
+      await submitAnswer(selectedAnswers);
+      fetchCorrectAnswers(); // 手动提交后获取正确答案
+    } catch (error) {
+      console.error('Error submitting answers:', error);
+      setError('Failed to submit answers');
+      setShowError(true);
+    }
+  };
+  
+  // 如果游戏未开始，显示等待页面
+  if (gameState === 'waiting') {
+    return <WaitingScreen playerName={playerName} />;
+  }
+  
+  return (
+    <div className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 min-h-screen">
+      <div className="max-w-3xl mx-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold text-blue-800">Playing as: {playerName}</h1>
+          {timeRemaining !== null && gameState === 'active' && (
+            <div className={`px-4 py-2 rounded-full font-bold text-white ${
+              timeRemaining > 10 ? 'bg-green-500' : 
+              timeRemaining > 5 ? 'bg-yellow-500' : 'bg-red-500 animate-pulse'
+            }`}>
+              {timeRemaining}s
+            </div>
+          )}
+        </div>
+        
+        {question && (
+          <GameQuestion
+            question={question}
+            selectedAnswers={selectedAnswers}
+            onAnswerSelect={handleAnswerSelect}
+            onSubmit={handleSubmitAnswers}
+            correctAnswers={correctAnswers}
+            gameState={gameState}
+            timeRemaining={timeRemaining}
+          />
+        )}
+        
+        <ErrorPopup
+          message={error}
+          show={showError}
+          onClose={() => setShowError(false)}
+        />
+      </div>
+    </div>
   );
 };
 
