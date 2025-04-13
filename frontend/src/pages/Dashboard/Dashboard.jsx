@@ -128,7 +128,7 @@ const Dashboard = () => {
 
     if (game.questions && game.questions.length > 0) {
       totalDuration = game.questions.reduce((total, question) => {
-        return total + (parseInt(question.timeLimit) || 0);
+        return total + (parseInt(question[0].duration) || 0);
       }, 0);
     }
 
@@ -171,6 +171,9 @@ const Dashboard = () => {
         // 设置活跃游戏和会话
         setActiveSession(response.sessionId);
 
+        // 在本地存储或状态中保存 gameId 和 sessionId 的映射关系
+        localStorage.setItem(`session_${response.sessionId}_gameId`, gameId);
+
         // 显示会话信息弹窗
         setShowSessionPopup(true);
       }
@@ -187,32 +190,35 @@ const Dashboard = () => {
     try {
       const gameId = games[gameIndex].id;
       const sessionId = games[gameIndex].active;
-      
+
       if (!sessionId) {
-        setError(`Game "${games[gameIndex].name}" doesn't have an active session`);
+        setError(
+          `Game "${games[gameIndex].name}" doesn't have an active session`
+        );
         setShowError(true);
         return;
       }
-      
+
       // 调用API停止游戏会话
       await mutateGameState(token, gameId, "END");
-      
+
       // 更新本地状态
       const updatedGames = [...games];
       updatedGames[gameIndex] = {
         ...updatedGames[gameIndex],
-        active: null
+        active: null,
       };
       setGames(updatedGames);
-      
+
       // 设置当前停止的会话ID，用于弹窗
       setStoppedSessionId(sessionId);
-      
+
       // 显示停止会话确认弹窗
       setShowStopSessionDialog(true);
-      
     } catch (error) {
-      setError(`Failed to stop game session: ${error.message || "Unknown error"}`);
+      setError(
+        `Failed to stop game session: ${error.message || "Unknown error"}`
+      );
       setShowError(true);
     }
   };
@@ -274,18 +280,18 @@ const Dashboard = () => {
           {games.map((game, index) => {
             const { questionCount, totalDuration } = getGameStats(game);
             const isActive = Boolean(game.active);
-            
+
             return (
               <div
                 key={index}
                 className={`bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 ${
-                  isActive ? 'bg-green-50' : ''
+                  isActive ? "bg-green-50" : ""
                 }`}
                 style={{
-                  boxShadow: isActive 
-                    ? '0 0 15px 5px rgba(52, 211, 153, 0.3)' 
+                  boxShadow: isActive
+                    ? "0 0 15px 5px rgba(52, 211, 153, 0.3)"
                     : undefined,
-                  transition: 'all 0.3s ease-in-out'
+                  transition: "all 0.3s ease-in-out",
                 }}
               >
                 <div
@@ -294,36 +300,55 @@ const Dashboard = () => {
                     backgroundImage: game.thumbnail
                       ? `url(${game.thumbnail})`
                       : "none",
-                    backgroundColor: game.thumbnail 
-                      ? "transparent" 
-                      : isActive ? "#dcfce7" : "#e0e0e0",
+                    backgroundColor: game.thumbnail
+                      ? "transparent"
+                      : isActive
+                      ? "#dcfce7"
+                      : "#e0e0e0",
                   }}
                 >
                   {!game.thumbnail && (
-                    <span className={isActive ? "text-green-700 text-lg" : "text-gray-500 text-lg"}>
-                      {isActive ? 'Active Session' : 'No Thumbnail'}
+                    <span
+                      className={
+                        isActive
+                          ? "text-green-700 text-lg"
+                          : "text-gray-500 text-lg"
+                      }
+                    >
+                      {isActive ? "Active Session" : "No Thumbnail"}
                     </span>
                   )}
                 </div>
                 <div className={isActive ? "p-4 bg-green-50" : "p-4"}>
-                  <h2 className={`text-xl font-semibold mb-2 ${
-                    isActive ? 'text-green-800' : 'text-blue-800'
-                  }`}>
+                  <h2
+                    className={`text-xl font-semibold mb-2 ${
+                      isActive ? "text-green-800" : "text-blue-800"
+                    }`}
+                  >
                     {game.name}
                   </h2>
-                  <p className={`text-sm ${isActive ? 'text-green-600' : 'text-gray-600'}`}>
+                  <p
+                    className={`text-sm ${
+                      isActive ? "text-green-600" : "text-gray-600"
+                    }`}
+                  >
                     Questions: {questionCount}
                   </p>
-                  <p className={`text-sm ${isActive ? 'text-green-600' : 'text-gray-600'}`}>
+                  <p
+                    className={`text-sm ${
+                      isActive ? "text-green-600" : "text-gray-600"
+                    }`}
+                  >
                     Duration: {totalDuration} seconds
                   </p>
                   {isActive && (
                     <div className="mt-2 flex items-center">
-                      <span 
+                      <span
                         className="w-2 h-2 rounded-full bg-green-500 mr-2"
-                        style={{ 
-                          animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                          boxShadow: '0 0 5px rgba(52, 211, 153, 0.5)'
+                        style={{
+                          animation:
+                            "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+                          boxShadow: "0 0 5px rgba(52, 211, 153, 0.5)",
                         }}
                       ></span>
                       <p className="text-sm font-medium text-green-600">
@@ -332,15 +357,19 @@ const Dashboard = () => {
                     </div>
                   )}
                 </div>
-                <div className={`flex justify-between p-3 border-t ${
-                  isActive ? 'border-green-200 bg-green-50' : ''
-                }`}>
+                <div
+                  className={`flex justify-between p-3 border-t ${
+                    isActive ? "border-green-200 bg-green-50" : ""
+                  }`}
+                >
                   <Button
                     variant="outline"
                     size="small"
-                    className={isActive 
-                      ? "text-green-600 border-green-600 hover:bg-green-100" 
-                      : "text-blue-600 border-blue-600 hover:bg-blue-100"}
+                    className={
+                      isActive
+                        ? "text-green-600 border-green-600 hover:bg-green-100"
+                        : "text-blue-600 border-blue-600 hover:bg-blue-100"
+                    }
                     onClick={() => navigateToGame(game)}
                     disabled={isActive}
                   >
@@ -353,6 +382,7 @@ const Dashboard = () => {
                         size="small"
                         className="bg-green-600 text-white hover:bg-green-700"
                         onClick={() => handleStartSession(index)}
+                        disabled={game.questions.length === 0}
                       >
                         Start
                       </Button>
@@ -364,6 +394,22 @@ const Dashboard = () => {
                         onClick={() => handleStopSession(index)}
                       >
                         Stop
+                      </Button>
+                    )}
+                    {isActive && (
+                      <Button
+                        variant="info"
+                        size="small"
+                        className="bg-blue-600 text-white hover:bg-blue-700"
+                        onClick={() => {
+                          const gameId = games[index].id;
+                          localStorage.setItem(
+                            `session_${game.active}_gameId`,gameId
+                          );
+                          navigate(`/session/${game.active}`)
+                        }}
+                      >
+                        View Session
                       </Button>
                     )}
                     <Button
@@ -455,7 +501,8 @@ const Dashboard = () => {
               Game Session Stopped
             </h2>
             <p className="text-gray-700 mb-4">
-              The game session has been stopped. Would you like to view the results?
+              The game session has been stopped. Would you like to view the
+              results?
             </p>
             <div className="flex justify-end space-x-2 mt-6">
               <Button

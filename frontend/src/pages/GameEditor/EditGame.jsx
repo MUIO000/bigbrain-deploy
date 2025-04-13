@@ -7,6 +7,11 @@ import SuccessPopup from "../../components/SuccessPopup";
 import { getAllGames, updateGames } from "../../api/gameApi";
 import { AuthContext } from "../../contexts/AuthContext";
 import { useContext } from "react";
+import {
+  createDefaultQuestion,
+  formatQuestionForBackend,
+  extractQuestionFromFormat
+} from '../../utils/questionFormatter';
 
 const EditGame = () => {
   const fileInputRef = useRef(null);
@@ -50,7 +55,7 @@ const EditGame = () => {
           if (foundGame) {
             setGame(foundGame);
             setGameName(foundGame.name || "");
-            setGameThumbnail(foundGame.thumbnail || null);
+            setGameThumbnail(foundGame.thumbnail || "");
             if (foundGame.thumbnail) {
               setImagePreview(foundGame.thumbnail);
             }
@@ -98,7 +103,7 @@ const EditGame = () => {
   };
 
   const handleClearImage = () => {
-    setImagePreview(null);
+    setImagePreview("");
     setGameThumbnail("");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -135,20 +140,13 @@ const EditGame = () => {
 
   const handleAddQuestion = async () => {
     try {
-      const newQuestion = {
-        id: Date.now(),
-        text: "New Question",
-        timeLimit: 30,
-        points: 10,
-        type: newQuestionType,
-        answers: [
-          { id: 1, text: "Answer 1", isCorrect: true },
-        ],
-        attachmentType: null,
-        attachmentUrl: null,
-      };
-
-      const updatedQuestions = [...questions, newQuestion];
+      // 使用工具函数创建默认问题
+      const newQuestionObj = createDefaultQuestion(newQuestionType);
+      
+      // 使用工具函数格式化为后端需要的嵌套格式
+      const formattedQuestion = formatQuestionForBackend(newQuestionObj);
+      
+      const updatedQuestions = [...questions, formattedQuestion];
       setQuestions(updatedQuestions);
 
       // 获取最新的游戏列表
@@ -370,43 +368,48 @@ const EditGame = () => {
           </p>
         ) : (
           <div className="space-y-4">
-            {questions.map((question, index) => (
-              <div
-                key={index}
-                className="border rounded-lg p-4 hover:bg-gray-50 transition-colors duration-200"
-              >
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className="font-semibold text-lg">
-                      {question.text || `Question ${index + 1}`}
-                    </h3>
-                    <p className="text-gray-600 text-sm">
-                      Type: {question.type || "Single Choice"} | Time:{" "}
-                      {question.timeLimit || 30}s | Points:{" "}
-                      {question.points || 10}
-                    </p>
-                  </div>
-                  <div className="flex space-x-2">
-                    <Button
-                      variant="outline"
-                      size="small"
-                      className="text-blue-600 border-blue-600 hover:bg-blue-100"
-                      onClick={() => handleNavigateToQuestion(index)}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      variant="danger"
-                      size="small"
-                      className="bg-red-600 text-white hover:bg-red-700"
-                      onClick={() => handleDeleteQuestion(index)}
-                    >
-                      Delete
-                    </Button>
+            {questions.map((questionFormat, index) => {
+              // 使用工具函数提取问题对象
+              const question = extractQuestionFromFormat(questionFormat);
+              
+              return (
+                <div
+                  key={index}
+                  className="border rounded-lg p-4 hover:bg-gray-50 transition-colors duration-200"
+                >
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h3 className="font-semibold text-lg">
+                        {question?.text || `Question ${index + 1}`}
+                      </h3>
+                      <p className="text-gray-600 text-sm">
+                        Type: {question?.type || "Single Choice"} | Time:{" "}
+                        {question?.duration || question?.timeLimit || 30}s | Points:{" "}
+                        {question?.points || 10}
+                      </p>
+                    </div>
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="outline"
+                        size="small"
+                        className="text-blue-600 border-blue-600 hover:bg-blue-100"
+                        onClick={() => handleNavigateToQuestion(index)}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="danger"
+                        size="small"
+                        className="bg-red-600 text-white hover:bg-red-700"
+                        onClick={() => handleDeleteQuestion(index)}
+                      >
+                        Delete
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
