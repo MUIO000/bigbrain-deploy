@@ -451,15 +451,12 @@ export const getQuestion = (playerId) =>
       return reject(new InputError("Session has not started yet"));
     } else {
       try {
-        const questionWithSessionInfo = session.questions
-          .at(session.position)
-          .map((question) => {
-            const { correctAnswers, ...questionWithoutAnswer } = question;
-            return {
-              ...questionWithoutAnswer,
-              isoTimeLastQuestionStarted: session.isoTimeLastQuestionStarted,
-            };
-          });
+        const question = session.questions.at(session.position);
+        const { correctAnswers, ...questionWithoutAnswer } = question;
+        const questionWithSessionInfo = {
+          ...questionWithoutAnswer,
+          isoTimeLastQuestionStarted: session.isoTimeLastQuestionStarted,
+        };
         resolve(questionWithSessionInfo);
       } catch (error) {
         reject(new InputError("Question not found"));
@@ -478,9 +475,7 @@ export const getAnswers = (playerId) =>
       return reject(new InputError("Answers are not available yet"));
     } else {
       try {
-        const answers = session.questions
-          .at(session.position)
-          .map((question) => question.correctAnswers);
+        const answers = session.questions.at(session.position).correctAnswers;
         resolve(answers);
       } catch (error) {
         reject(new InputError("Question not found"));
