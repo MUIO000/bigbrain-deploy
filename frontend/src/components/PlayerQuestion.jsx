@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Button from './Button';
 
 const PlayerQuestion = ({ question, onAnswerSubmit, timeRemaining }) => {
@@ -57,8 +57,8 @@ const PlayerQuestion = ({ question, onAnswerSubmit, timeRemaining }) => {
         {timeRemaining !== null && (
           <div className={`px-4 py-1 rounded-full ${
             timeRemaining > 10 ? 'bg-green-100 text-green-800' : 
-            timeRemaining > 5 ? 'bg-yellow-100 text-yellow-800' : 
-            'bg-red-100 text-red-800 animate-pulse'
+              timeRemaining > 5 ? 'bg-yellow-100 text-yellow-800' : 
+                'bg-red-100 text-red-800 animate-pulse'
           }`}>
             {timeRemaining}s
           </div>
@@ -155,10 +155,10 @@ const PlayerQuestion = ({ question, onAnswerSubmit, timeRemaining }) => {
           variant="primary"
           className={`${
             submitted 
-            ? 'bg-gray-500 cursor-not-allowed' 
-            : (question.type === 'judgement' || selectedAnswers.length > 0)
-              ? 'bg-blue-600 hover:bg-blue-700' 
-              : 'bg-gray-400 cursor-not-allowed'
+              ? 'bg-gray-500 cursor-not-allowed' 
+              : (question.type === 'judgement' || selectedAnswers.length > 0)
+                ? 'bg-blue-600 hover:bg-blue-700' 
+                : 'bg-gray-400 cursor-not-allowed'
           } text-white px-8 py-3 rounded-lg font-medium transition-colors duration-200`}
           onClick={handleSubmit}
           disabled={submitted || (question.type !== 'judgement' && selectedAnswers.length === 0)}
