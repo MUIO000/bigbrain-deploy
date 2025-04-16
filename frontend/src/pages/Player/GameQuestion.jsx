@@ -1,4 +1,3 @@
-import React from "react";
 import Button from "../../components/Button";
 
 const GameQuestion = ({
@@ -158,7 +157,7 @@ const GameQuestion = ({
             <br />
             Your selected answer(s): 
             <ul className="list-disc pl-5">
-                {selectedAnswers &&
+              {selectedAnswers &&
                   selectedAnswers.map((answer, index) => (
                     <li key={index}>{answer}</li>
                   ))}
@@ -171,8 +170,8 @@ const GameQuestion = ({
                 {correctAnswers && correctAnswers.includes("True")
                   ? "True"
                   : correctAnswers && correctAnswers.includes("False")
-                  ? "False"
-                  : "Unknown"}
+                    ? "False"
+                    : "Unknown"}
               </p>
             ) : (
               <ul className="list-disc pl-5 text-green-700">

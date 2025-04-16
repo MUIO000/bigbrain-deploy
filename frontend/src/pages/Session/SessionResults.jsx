@@ -90,10 +90,10 @@ const SessionResults = ({ sessionId: propSessionId }) => {
         const avgResponseTime =
           responseTimes.length > 0
             ? Math.round(
-                (responseTimes.reduce((sum, time) => sum + time, 0) /
+              (responseTimes.reduce((sum, time) => sum + time, 0) /
                   responseTimes.length) *
                   10
-              ) / 10
+            ) / 10
             : 0;
 
         correctAnswersData.push({
@@ -135,7 +135,7 @@ const SessionResults = ({ sessionId: propSessionId }) => {
   if (!isNewFormat) {
     return (
       <div className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 min-h-screen">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           <div className="bg-white rounded-lg shadow-lg p-6 text-center">
             <h1 className="text-2xl font-bold text-red-600 mb-4">
               No Results Available
@@ -184,7 +184,7 @@ const SessionResults = ({ sessionId: propSessionId }) => {
 
   return (
     <div className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 min-h-screen">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-blue-800">Session Results</h1>
           <Button
@@ -253,10 +253,10 @@ const SessionResults = ({ sessionId: propSessionId }) => {
                         {index === 0
                           ? "🥇"
                           : index === 1
-                          ? "🥈"
-                          : index === 2
-                          ? "🥉"
-                          : `${index + 1}`}
+                            ? "🥈"
+                            : index === 2
+                              ? "🥉"
+                              : `${index + 1}`}
                       </div>
                     </td>
                     <td className="py-2 px-4 whitespace-nowrap">

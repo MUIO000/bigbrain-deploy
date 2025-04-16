@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { getSessionStatus, mutateGameState } from "../../api/gameApi";
 import Button from "../../components/Button";
@@ -197,7 +197,7 @@ const SessionControl = ({ sessionId, sessionData: initialData }) => {
 
   return (
     <div className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 min-h-screen">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <div className="flex justify-end space-x-2 mb-4">
           <Button
             variant="secondary"
@@ -258,8 +258,8 @@ const SessionControl = ({ sessionId, sessionData: initialData }) => {
                       timeRemaining > 10
                         ? "bg-green-100 text-green-800"
                         : timeRemaining > 5
-                        ? "bg-yellow-100 text-yellow-800"
-                        : "bg-red-100 text-red-800 animate-pulse"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-red-100 text-red-800 animate-pulse"
                     }`}
                   >
                     {timeRemaining}s remaining
@@ -271,31 +271,31 @@ const SessionControl = ({ sessionId, sessionData: initialData }) => {
 
               {currentQuestion.attachmentType === "image" &&
                 currentQuestion.attachmentUrl && (
-                  <div className="mb-4">
-                    <img
-                      src={currentQuestion.attachmentUrl}
-                      alt="Question attachment"
-                      className="max-w-full rounded-lg"
-                    />
-                  </div>
-                )}
+                <div className="mb-4">
+                  <img
+                    src={currentQuestion.attachmentUrl}
+                    alt="Question attachment"
+                    className="max-w-full rounded-lg"
+                  />
+                </div>
+              )}
 
               {currentQuestion.attachmentType === "youtube" &&
                 currentQuestion.attachmentUrl && (
-                  <div className="mb-4">
-                    <div className="aspect-w-16 aspect-h-9">
-                      <iframe
-                        src={`https://www.youtube.com/embed/${getYoutubeVideoId(
-                          currentQuestion.attachmentUrl
-                        )}`}
-                        title="YouTube video"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                        className="rounded-lg w-full h-64"
-                      ></iframe>
-                    </div>
+                <div className="mb-4">
+                  <div className="aspect-w-16 aspect-h-9">
+                    <iframe
+                      src={`https://www.youtube.com/embed/${getYoutubeVideoId(
+                        currentQuestion.attachmentUrl
+                      )}`}
+                      title="YouTube video"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      className="rounded-lg w-full h-64"
+                    ></iframe>
                   </div>
-                )}
+                </div>
+              )}
 
               <div className="mt-6">
                 <h4 className="font-medium mb-2">Answer Options:</h4>

@@ -1,9 +1,7 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getPlayerQuestion, getPlayerResults } from "../../api/player";
+import { getPlayerResults } from "../../api/player";
 import ErrorPopup from "../../components/ErrorPopup";
-// 导入现有的图表组件
-import CorrectAnswersChart from "../Session/Charts/CorrectAnswersChart";
 import ResponseTimeChart from "../Session/Charts/ResponseTimeChart";
 
 const GameResults = () => {
@@ -20,7 +18,7 @@ const GameResults = () => {
     localStorage.getItem("playerName") ||
     "Anonymous";
 
-  const [results, setResults] = useState(null);
+  const [, setResults] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showError, setShowError] = useState(false);
