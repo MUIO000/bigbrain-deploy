@@ -133,6 +133,7 @@ const EditGame = () => {
         setSuccess("Game updated successfully");
         setShowSuccess(true);
       }
+    // eslint-disable-next-line no-unused-vars
     } catch (error) {
       setError("Failed to update game");
       setShowError(true);
