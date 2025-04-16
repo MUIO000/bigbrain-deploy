@@ -43,6 +43,7 @@ const Dashboard = () => {
           setGames([]);
         }
         setLoading(false);
+      // eslint-disable-next-line no-unused-vars
       } catch (error) {
         setError("Failed to load games. Please try again.");
         setShowError(true);
@@ -85,6 +86,7 @@ const Dashboard = () => {
 
       setSuccess("Game created successfully");
       setShowSuccess(true);
+    // eslint-disable-next-line no-unused-vars
     } catch (error) {
       setError("Failed to create game. Please try again.");
       setShowError(true);
@@ -112,6 +114,7 @@ const Dashboard = () => {
 
       setSuccess("Game deleted successfully");
       setShowSuccess(true);
+    // eslint-disable-next-line no-unused-vars
     } catch (error) {
       setError("Failed to delete game. Please try again.");
       setShowError(true);
@@ -303,8 +306,8 @@ const Dashboard = () => {
                     backgroundColor: game.thumbnail
                       ? "transparent"
                       : isActive
-                      ? "#dcfce7"
-                      : "#e0e0e0",
+                        ? "#dcfce7"
+                        : "#e0e0e0",
                   }}
                 >
                   {!game.thumbnail && (
@@ -471,8 +474,8 @@ const Dashboard = () => {
               Delete Game
             </h2>
             <p className="text-gray-700">
-              Are you sure you want to delete "
-              {selectedGameId !== null && games[selectedGameId]?.name}"? This
+              Are you sure you want to delete &quot;
+              {selectedGameId !== null && games[selectedGameId]?.name}&quot;? This
               action cannot be undone.
             </p>
             <div className="flex justify-end space-x-2 mt-6">
