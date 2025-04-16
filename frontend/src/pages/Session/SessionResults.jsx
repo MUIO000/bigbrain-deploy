@@ -392,7 +392,102 @@ const SessionResults = ({ sessionId: propSessionId }) => {
                 })()}
               </div>
 
+              <div className="p-4 bg-red-50 rounded-lg">
+                <h3 className="font-medium text-red-800 mb-2">
+                  Hardest Question
+                </h3>
+                {(() => {
+                  const hardest = [...chartData.correctAnswers].sort(
+                    (a, b) => a.correctPercentage - b.correctPercentage
+                  )[0];
+                  return hardest ? (
+                    <div>
+                      <p className="text-lg font-bold">
+                        {hardest.questionNumber}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        {hardest.correctPercentage}% of players answered
+                        correctly
+                      </p>
+                    </div>
+                  ) : (
+                    <p>No data available</p>
+                  );
+                })()}
+              </div>
+            </div>
+          )}
 
+          {/* 总体表现分析 */}
+          {chartData.correctAnswers.length > 0 && (
+            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+              <h3 className="font-medium text-gray-800 mb-2 font-semibold">
+                Overall Performance
+              </h3>
+              {(() => {
+                // 计算总体平均正确率
+                const avgCorrectRate =
+                  chartData.correctAnswers.reduce(
+                    (sum, item) => sum + item.correctPercentage,
+                    0
+                  ) / chartData.correctAnswers.length;
+
+                // 计算平均响应时间
+                const avgResponseTime =
+                  chartData.responseTime.reduce(
+                    (sum, item) => sum + item.avgResponseTime,
+                    0
+                  ) / chartData.responseTime.length;
+
+                let performanceMessage = "";
+                if (avgCorrectRate > 75) {
+                  performanceMessage =
+                    "Excellent performance! Players understood the material very well.";
+                } else if (avgCorrectRate > 50) {
+                  performanceMessage =
+                    "Good performance. Most players grasped the key concepts.";
+                } else if (avgCorrectRate > 30) {
+                  performanceMessage =
+                    "Average performance. Consider revisiting some topics.";
+                } else {
+                  performanceMessage =
+                    "Challenging performance. The material might need more explanation.";
+                }
+
+                return (
+                  <div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      <div>
+                        <p className="text-sm text-gray-600">
+                          Average Correct Rate:
+                        </p>
+                        <p className="text-xl font-bold">
+                          {Math.round(avgCorrectRate)}%
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">
+                          Average Response Time:
+                        </p>
+                        <p className="text-xl font-bold">
+                          {Math.round(avgResponseTime * 10) / 10} seconds
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-gray-700">{performanceMessage}</p>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <ErrorPopup
+        message={error}
+        show={showError}
+        onClose={() => setShowError(false)}
+      />
     </div>
   );
 };
