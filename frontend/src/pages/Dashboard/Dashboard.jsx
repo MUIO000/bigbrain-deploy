@@ -404,9 +404,10 @@ const Dashboard = () => {
                         onClick={() => {
                           const gameId = games[index].id;
                           localStorage.setItem(
-                            `session_${game.active}_gameId`,gameId
+                            `session_${game.active}_gameId`,
+                            gameId
                           );
-                          navigate(`/session/${game.active}`)
+                          navigate(`/session/${game.active}`);
                         }}
                       >
                         View Session
