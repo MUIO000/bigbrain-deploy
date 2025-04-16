@@ -365,126 +365,126 @@ const QuestionEditor = () => {
   return (
     <div className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 min-h-screen">
       <div className="max-w-5xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-blue-800">
-          Edit Question {parseInt(questionId, 10) + 1}
-        </h1>
-        <Button
-          variant="secondary"
-          className="bg-gray-600 text-white hover:bg-gray-700"
-          onClick={handleBackToGame}
-        >
-          Back to Game
-        </Button>
-      </div>
-
-      <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-        <div className="mb-4">
-          <h2 className="text-xl font-semibold mb-4 text-blue-800">
-            Question Details
-          </h2>
-          <InputField
-            label="Question Text"
-            id="questionText"
-            value={questionText}
-            onChange={(e) => setQuestionText(e.target.value)}
-            placeholder="Enter question text"
-            required
-          />
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold text-blue-800">
+            Edit Question {parseInt(questionId, 10) + 1}
+          </h1>
+          <Button
+            variant="secondary"
+            className="bg-gray-600 text-white hover:bg-gray-700"
+            onClick={handleBackToGame}
+          >
+            Back to Game
+          </Button>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3 mb-4">
-          <div>
-            <label className="block text-gray-700 mb-2 -mt-1.5">
-              Question Type
-            </label>
-            <select
-              className="w-full p-2 border rounded-md"
-              value={questionType}
-              onChange={(e) => setQuestionType(e.target.value)}
-            >
-              <option value="single">Single Choice</option>
-              <option value="multiple">Multiple Choice</option>
-              <option value="judgement">Judgement</option>
-            </select>
-          </div>
-          <div>
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+          <div className="mb-4">
+            <h2 className="text-xl font-semibold mb-4 text-blue-800">
+              Question Details
+            </h2>
             <InputField
-              label="Time Limit (seconds)"
-              id="timeLimit"
-              value={timeLimit}
-              onChange={(e) => setTimeLimit(e.target.value)}
-              type="number"
-              min="1"
+              label="Question Text"
+              id="questionText"
+              value={questionText}
+              onChange={(e) => setQuestionText(e.target.value)}
+              placeholder="Enter question text"
               required
             />
           </div>
-          <div>
-            <InputField
-              label="Points"
-              id="points"
-              value={points}
-              onChange={(e) => setPoints(e.target.value)}
-              type="number"
-              min="1"
-              required
-            />
-          </div>
-        </div>
 
-        <div className="mb-4">
-          <h3 className="font-semibold mb-2">Attachment</h3>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3 mb-4">
             <div>
-              <label className="block text-gray-700 mb-2">
-                Attachment Type
+              <label className="block text-gray-700 mb-2 -mt-1.5">
+                Question Type
               </label>
               <select
-                className="w-full p-2 border rounded-md "
-                value={attachmentType}
-                onChange={(e) => setAttachmentType(e.target.value)}
+                className="w-full p-2 border rounded-md"
+                value={questionType}
+                onChange={(e) => setQuestionType(e.target.value)}
               >
-                <option value="none">None</option>
-                <option value="youtube">YouTube Video</option>
-                <option value="image">Image</option>
+                <option value="single">Single Choice</option>
+                <option value="multiple">Multiple Choice</option>
+                <option value="judgement">Judgement</option>
               </select>
             </div>
             <div>
-              {attachmentType !== "none" && (
-                <>
-                  <InputField
-                    label={
-                      attachmentType === "youtube" ? "YouTube URL" : "Image URL"
-                    }
-                    id="attachmentUrl"
-                    value={attachmentUrl}
-                    onChange={(e) => setAttachmentUrl(e.target.value)}
-                    placeholder={
-                      attachmentType === "youtube"
-                        ? "Enter YouTube video URL"
-                        : "Enter image URL"
-                    }
-                  />
-                  {attachmentType === "image" && (
-                    <div className="mt-2">
-                      <label
-                        htmlFor="image-upload"
-                        className="bg-blue-500 text-white py-2 px-4 rounded cursor-pointer hover:bg-blue-600 inline-block"
-                      >
-                        Upload Image
-                      </label>
-                      <input
-                        type="file"
-                        id="image-upload"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        className="hidden"
-                      />
-                      {attachmentUrl &&
-                        attachmentUrl.startsWith("data:image") && (
+              <InputField
+                label="Time Limit (seconds)"
+                id="timeLimit"
+                value={timeLimit}
+                onChange={(e) => setTimeLimit(e.target.value)}
+                type="number"
+                min="1"
+                required
+              />
+            </div>
+            <div>
+              <InputField
+                label="Points"
+                id="points"
+                value={points}
+                onChange={(e) => setPoints(e.target.value)}
+                type="number"
+                min="1"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="mb-4">
+            <h3 className="font-semibold mb-2">Attachment</h3>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div>
+                <label className="block text-gray-700 mb-2">
+                  Attachment Type
+                </label>
+                <select
+                  className="w-full p-2 border rounded-md "
+                  value={attachmentType}
+                  onChange={(e) => setAttachmentType(e.target.value)}
+                >
+                  <option value="none">None</option>
+                  <option value="youtube">YouTube Video</option>
+                  <option value="image">Image</option>
+                </select>
+              </div>
+              <div>
+                {attachmentType !== "none" && (
+                  <>
+                    <InputField
+                      label={
+                        attachmentType === "youtube" ? "YouTube URL" : "Image URL"
+                      }
+                      id="attachmentUrl"
+                      value={attachmentUrl}
+                      onChange={(e) => setAttachmentUrl(e.target.value)}
+                      placeholder={
+                        attachmentType === "youtube"
+                          ? "Enter YouTube video URL"
+                          : "Enter image URL"
+                      }
+                    />
+                    {attachmentType === "image" && (
+                      <div className="mt-2">
+                        <label
+                          htmlFor="image-upload"
+                          className="bg-blue-500 text-white py-2 px-4 rounded cursor-pointer hover:bg-blue-600 inline-block"
+                        >
+                          Upload Image
+                        </label>
+                        <input
+                          type="file"
+                          id="image-upload"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          className="hidden"
+                        />
+                        {attachmentUrl &&
+                          attachmentUrl.startsWith("data:image") && (
                           <div className="mt-3">
                             <p className="text-green-600 text-sm">
-                              Image uploaded successfully
+                                Image uploaded successfully
                             </p>
                             <div className="mt-2 border p-2 rounded">
                               <img
@@ -495,128 +495,61 @@ const QuestionEditor = () => {
                             </div>
                           </div>
                         )}
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-        {/* 修改 Answers 部分的标题和添加按钮 */}
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="font-semibold">
-            {questionType === "judgement"
-              ? "Judgement"
-              : `Answers (${answers.length}/6)`}
-          </h3>
-          {questionType !== "judgement" && (
-            <Button
-              variant="primary"
-              size="small"
-              className="bg-blue-600 text-white hover:bg-blue-700"
-              onClick={handleAddAnswer}
-              disabled={answers.length >= 6}
-            >
-              Add Answer
-            </Button>
-          )}
-        </div>
-
-        {/* 修改答案选项的渲染 */}
-        {answers.map((answer) => (
-          <div
-            key={answer.id}
-            className="border rounded p-4 mb-3 hover:bg-gray-50 transition-colors duration-200"
-          >
-            <div className="flex items-start">
-              <div className="flex-grow mr-4">
-                <InputField
-                  label={
-                    questionType === "judgement"
-                      ? "True/False Statement"
-                      : `Answer ${answer.id}`
-                  }
-                  id={`answer-${answer.id}`}
-                  value={answer.text}
-                  onChange={(e) =>
-                    handleAnswerTextChange(answer.id, e.target.value)
-                  }
-                  placeholder={
-                    questionType === "judgement"
-                      ? "Enter true/false statement"
-                      : "Enter answer text"
-                  }
-                  required
-                  disabled={questionType === "judgement"} // 判断题不能编辑答案文本
-                />
-              </div>
-              <div className="flex items-center mt-8 space-x-4">
-                <div className="flex items-center">
-                  <input
-                    type={
-                      questionType === "judgement"
-                        ? "checkbox"
-                        : questionType === "multiple"
-                        ? "checkbox"
-                        : "radio"
-                    }
-                    id={`correct-${answer.id}`}
-                    checked={answer.isCorrect}
-                    onChange={(e) =>
-                      handleAnswerCorrectChange(answer.id, e.target.checked)
-                    }
-                    className="mr-2"
-                  />
-                  <label htmlFor={`correct-${answer.id}`}>
-                    {questionType === "judgement"
-                      ? answer.isCorrect
-                        ? "True"
-                        : "False"
-                      : "Correct"}
-                  </label>
-                </div>
-                {questionType !== "judgement" && (
-                  <Button
-                    variant="danger"
-                    size="small"
-                    className="bg-red-600 text-white hover:bg-red-700"
-                    onClick={() => handleDeleteAnswer(answer.id)}
-                    disabled={answers.length <= 2}
-                  >
-                    Delete
-                  </Button>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>
           </div>
-        ))}
-
-        <div className="mt-6">
-          <Button
-            variant="primary"
-            className="bg-blue-600 text-white hover:bg-blue-700"
-            onClick={handleSaveQuestion}
-          >
-            Save Question
-          </Button>
         </div>
+
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+          {/* 修改 Answers 部分的标题和添加按钮 */}
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="font-semibold">
+              {questionType === "judgement"
+                ? "Judgement"
+                : `Answers (${answers.length}/6)`}
+            </h3>
+            {questionType !== "judgement" && (
+              <Button
+                variant="primary"
+                size="small"
+                className="bg-blue-600 text-white hover:bg-blue-700"
+                onClick={handleAddAnswer}
+                disabled={answers.length >= 6}
+              >
+                Add Answer
+              </Button>
+            )}
+          </div>
+
+
+
+          <div className="mt-6">
+            <Button
+              variant="primary"
+              className="bg-blue-600 text-white hover:bg-blue-700"
+              onClick={handleSaveQuestion}
+            >
+              Save Question
+            </Button>
+          </div>
+        </div>
+
+        <ErrorPopup
+          message={error}
+          show={showError}
+          onClose={() => setShowError(false)}
+        />
+
+        <SuccessPopup
+          message={success}
+          show={showSuccess}
+          onClose={() => setShowSuccess(false)}
+        />
       </div>
-
-      <ErrorPopup
-        message={error}
-        show={showError}
-        onClose={() => setShowError(false)}
-      />
-
-      <SuccessPopup
-        message={success}
-        show={showSuccess}
-        onClose={() => setShowSuccess(false)}
-      />
-    </div>
     </div>
   );
 };
