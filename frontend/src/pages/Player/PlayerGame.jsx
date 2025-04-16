@@ -118,7 +118,7 @@ const PlayerGame = () => {
       // 使用 ref 获取最新状态，而不是状态变量
       console.log("当前游戏状态 (ref):", gameStateRef.current);
       console.log("当前游戏状态 (state):", gameState);
-      
+
       if (statusData.started) {
         // 使用 ref 进行比较
         if (gameStateRef.current === "answered") {
@@ -483,7 +483,7 @@ const PlayerGame = () => {
         `totalScore_${playerId}`,
         JSON.stringify(newStats.score)
       );
-      console.log("-----------")
+      console.log("-----------");
       console.log(localStorage);
       return newStats;
     });
@@ -507,9 +507,12 @@ const PlayerGame = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 p-4">
-      <div className="max-w-3xl mx-auto">
-        {gameState === "waiting" && <WaitingScreen playerName={playerName} />}
-
+      {gameState === "waiting" && (
+        <div className="w-full h-screen mx-auto">
+          <WaitingScreen playerName={playerName} />
+        </div>
+      )}
+      <div className="max-w-4xl mx-auto">
         {gameState === "active" && question && (
           <div className="mb-4">
             <div className="bg-white p-4 rounded-lg shadow-md mb-4">
