@@ -396,4 +396,202 @@ const PlayerGame = () => {
         ? (answerTime - questionStartTimeRef.current) / 1000
         : 0;
 
+      // 临时存储本次响应时间
+      localStorage.setItem(
+        `questionResponseTime_${playerId}_${lastQuestionId}`,
+        responseTime.toString()
+      );
 
+      // 标记为已提交，防止重复自动提交
+      hasSubmittedRef.current = true;
+    } catch (error) {
+      console.error("提交答案失败:", error);
+      setError("无法提交答案");
+      setShowError(true);
+    }
+  };
+
+  // 获取正确答案
+  const fetchCorrectAnswers = async () => {
+    try {
+      if (answerFetchingRef.current) return; // 防止重复请求
+      answerFetchingRef.current = true; // 设置标志，防止重复请求
+
+      console.log("获取正确答案...");
+      const answerData = await getPlayerCorrectAnswer(playerId);
+      console.log("正确答案数据:", answerData);
+
+      const responseData = await getPlayerQuestion(playerId);
+      const questionId = responseData.question.id || 0;
+
+      if (answerData && answerData.answerIds) {
+        setCorrectAnswers(answerData.answerIds);
+        // 使用更新函数而不是直接设置
+        updateGameState("answered");
+        console.log("游戏状态已更新为answered");
+
+        let currentSelectedAnswers = [...selectedAnswers];
+        // 尝试从本地存储中获取更准确的选择
+        try {
+          console.log(localStorage);
+          console.log("lastQuestionId:", lastQuestionId);
+          console.log("QuestionId:", questionId);
+          setLastQuestionId(questionId);
+          const storedAnswers = localStorage.getItem(
+            `selectedAnswers_${playerId}_${questionId}`
+          );
+          if (storedAnswers) {
+            currentSelectedAnswers = JSON.parse(storedAnswers);
+            console.log("从本地存储恢复选择:", currentSelectedAnswers);
+          }
+        } catch (e) {
+          console.error("读取本地存储的选择失败:", e);
+        }
+
+        // 计算是否回答正确
+        const isCorrect =
+          currentSelectedAnswers &&
+          currentSelectedAnswers.length > 0 &&
+          JSON.stringify(currentSelectedAnswers.sort()) ===
+            JSON.stringify(answerData.answerIds.sort());
+
+        // 更新统计信息
+        updateStats(isCorrect, responseData.question.points);
+
+        // 保存统计数据到localStorage
+        savePlayerStats();
+      }
+    } catch (error) {
+      console.error("获取正确答案失败:", error);
+      setError("无法获取正确答案");
+      setShowError(true);
+    }
+  };
+
+  // 新增: 更新玩家统计数据
+  const updateStats = (isCorrect, points) => {
+    setStats((prevStats) => {
+      // 计算此题得分 (可以根据需要调整得分规则)
+      const questionScore = isCorrect ? points : 0;
+      console.log("问题得分:", questionScore);
+      // 更新统计数据
+      const newStats = {
+        score: prevStats.score + questionScore,
+      };
+
+      localStorage.setItem(
+        `totalScore_${playerId}`,
+        JSON.stringify(newStats.score)
+      );
+      console.log("-----------")
+      console.log(localStorage);
+      return newStats;
+    });
+  };
+
+  // 新增: 保存玩家统计数据到localStorage
+  const savePlayerStats = () => {
+    try {
+      localStorage.setItem(`playerStats_${playerId}`, JSON.stringify(stats));
+      console.log("玩家统计数据已保存:", stats);
+    } catch (e) {
+      console.error("保存统计数据失败:", e);
+    }
+  };
+
+  // 提交多选题答案
+  const handleSubmit = () => {
+    if (selectedAnswers.length === 0 || gameState !== "active") return;
+    submitAnswer(selectedAnswers);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 p-4">
+      <div className="max-w-3xl mx-auto">
+        {gameState === "waiting" && <WaitingScreen playerName={playerName} />}
+
+        {gameState === "active" && question && (
+          <div className="mb-4">
+            <div className="bg-white p-4 rounded-lg shadow-md mb-4">
+              <div className="flex justify-between items-center">
+                {timeRemaining !== null && (
+                  <div className="text-lg font-medium">
+                    Time: {timeRemaining}s
+                  </div>
+                )}
+              </div>
+              <div className="mt-2">
+                <div className="w-full bg-gray-200 rounded-full h-2.5">
+                  <div
+                    className="bg-blue-600 h-2.5 rounded-full transition-all duration-1000"
+                    style={{
+                      width: `${
+                        (timeRemaining / (question.duration || 1)) * 100
+                      }%`,
+                    }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            <GameQuestion
+              question={question}
+              selectedAnswers={selectedAnswers}
+              onAnswerSelect={handleAnswerSelect}
+              onSubmit={handleSubmit}
+              gameState={gameState}
+            />
+          </div>
+        )}
+
+        {gameState === "answered" && question && (
+          <div>
+            <div className="bg-white p-4 rounded-lg shadow-md mb-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-medium text-blue-800">
+                  Question Results
+                </h3>
+                <div className="text-lg font-medium">
+                  Score: +
+                  {selectedAnswers &&
+                  correctAnswers &&
+                  JSON.stringify(selectedAnswers.sort()) ===
+                    JSON.stringify(correctAnswers.sort())
+                    ? question.points
+                    : "0"}
+                </div>
+              </div>
+            </div>
+
+            <GameQuestion
+              question={question}
+              selectedAnswers={selectedAnswers}
+              onAnswerSelect={handleAnswerSelect}
+              onSubmit={handleSubmit}
+              correctAnswers={correctAnswers}
+              gameState={gameState}
+            />
+
+            <div className="mt-4 text-center">
+              <p className="text-gray-600 mb-2">
+                Waiting for the next question...
+              </p>
+              <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+              <div className="mt-4 text-sm text-gray-600">
+                Total score so far: {stats.score}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <ErrorPopup
+        message={error}
+        show={showError}
+        onClose={() => setShowError(false)}
+      />
+    </div>
+  );
+};
+
+export default PlayerGame;
