@@ -6,7 +6,7 @@ import EditGame from "../pages/GameEditor/EditGame";
 import QuestionEditor from "../pages/GameEditor/QuestionEditor";
 import SessionPage from "../pages/Session/SessionPage";
 import PlayJoin from "../pages/Player/PlayJoin";
-import PlayGame from "../pages/Player/PlayGame";
+import PlayerGame from "../pages/Player/PlayerGame";
 import GameResults from "../pages/Player/GameResults";
 
 const AppRouter = () => (
@@ -23,8 +23,8 @@ const AppRouter = () => (
     <Route path="/session/:sessionId" element={<SessionPage />} />
     <Route path="/play" element={<PlayJoin />} />
     <Route path="/play/:sessionId" element={<PlayJoin />} />
-    <Route path="/play/game" element={<PlayGame />} />
-    <Route path="/play/results" element={<GameResults />} />
+    <Route path="/play/game/:playerId" element={<PlayerGame />} />
+    <Route path="/play/results/:playerId" element={<GameResults />} />
   </Routes>
 );
 

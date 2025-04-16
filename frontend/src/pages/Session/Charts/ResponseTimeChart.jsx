@@ -18,7 +18,8 @@ const ResponseTimeChart = ({ data }) => {
             label={{ value: 'Question Number', position: 'insideBottom', offset: -5 }} 
           />
           <YAxis 
-            label={{ value: 'Average Time (seconds)', angle: -90, position: 'insideLeft' }} 
+            fontSize={10}
+            label={{ value: 'Average Time (seconds)', angle: -90, position: 'outsideleft' }} 
           />
           <Tooltip formatter={(value) => [`${value}s`, 'Avg Response Time']} />
           <Legend />

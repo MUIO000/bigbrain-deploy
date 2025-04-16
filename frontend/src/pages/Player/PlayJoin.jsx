@@ -22,35 +22,19 @@ const PlayJoin = () => {
   
   const handleJoinGame = async (e) => {
     e.preventDefault();
-    
-    if (!sessionId.trim()) {
-      setError('Session ID is required');
-      setShowError(true);
-      return;
-    }
-    
-    if (!playerName.trim()) {
-      setError('Player name is required');
-      setShowError(true);
-      return;
-    }
-    
     try {
       setLoading(true);
       const response = await joinGameSession(sessionId, playerName);
-      
-      // 保存玩家信息到localStorage或sessionStorage
-      localStorage.setItem('playerId', response.playerId);
-      localStorage.setItem('playerName', playerName);
-      localStorage.setItem('sessionId', sessionId);
-      
-      // 导航到游戏页面
-      navigate(`/play/game`);
+      if (response && response.playerId) {
+        // 使用playerId作为键的一部分
+        localStorage.setItem(`playerName_${response.playerId}`, playerName);
+        
+        navigate(`/play/game/${response.playerId}`);
+      }
     } catch (error) {
-      console.error('Error joining game:', error);
-      setError(error.response?.data?.error || 'Failed to join game');
+      console.error("Error joining game:", error);
+      setError(error.message || "Failed to join game");
       setShowError(true);
-      setLoading(false);
     }
   };
   

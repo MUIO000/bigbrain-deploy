@@ -10,7 +10,7 @@ const CorrectAnswersChart = ({ data }) => {
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
           data={data}
-          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+          margin={{ top: 20, right: 30, left: 10, bottom: 5 }}
         >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis 
@@ -18,7 +18,8 @@ const CorrectAnswersChart = ({ data }) => {
             label={{ value: 'Question Number', position: 'insideBottom', offset: -5 }} 
           />
           <YAxis 
-            label={{ value: 'Correct Answers (%)', angle: -90, position: 'insideLeft' }} 
+            fontSize={10}
+            label={{ value: 'Correct Answers (%)', angle: -90, position: 'outsideLeft'}} 
           />
           <Tooltip formatter={(value) => [`${value}%`, 'Correct Answers']} />
           <Legend />
