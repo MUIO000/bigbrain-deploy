@@ -250,223 +250,223 @@ const EditGame = () => {
   return (
     <div className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 min-h-screen">
       <div className="max-w-5xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-blue-800">Edit Game</h1>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold text-blue-800">Edit Game</h1>
 
-        <div className="flex space-x-2">
-          <Button
-            variant="secondary"
-            className="bg-gray-600 text-white hover:bg-gray-700"
-            onClick={handleBackToDashboard}
-          >
-            Back to Dashboard
-          </Button>
-          <Button
-            variant="secondary"
-            className="bg-red-600 text-white hover:bg-red-700"
-            onClick={handleLogout}
-          >
-            Logout
-          </Button>
-        </div>
-      </div>
-
-      <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-        <h2 className="text-xl font-semibold mb-4 text-blue-800">
-          Game Details
-        </h2>
-        <div className="grid grid-cols-1 gap-4">
-          <div>
-            <InputField
-              label="Game Name"
-              id="gameName"
-              value={gameName}
-              onChange={(e) => setGameName(e.target.value)}
-              placeholder="Enter game name"
-              required
-            />
+          <div className="flex space-x-2">
+            <Button
+              variant="secondary"
+              className="bg-gray-600 text-white hover:bg-gray-700"
+              onClick={handleBackToDashboard}
+            >
+              Back to Dashboard
+            </Button>
+            <Button
+              variant="secondary"
+              className="bg-red-600 text-white hover:bg-red-700"
+              onClick={handleLogout}
+            >
+              Logout
+            </Button>
           </div>
-          <div>
-            <label className="block text-gray-700 text-sm font-medium mb-2">
-              Thumbnail Image
-            </label>
-            <div className="flex flex-col space-y-4">
-              {imagePreview && (
-                <div className="mb-2">
-                  <img
-                    src={imagePreview}
-                    alt="Thumbnail preview"
-                    className="h-32 w-auto object-contain border rounded"
-                  />
-                </div>
-              )}
+        </div>
 
-              <div className="flex space-x-2">
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileChange}
-                  accept="image/*"
-                  className="hidden"
-                />
-
-                <Button
-                  variant="outline"
-                  className="text-blue-600 border-blue-600 hover:bg-blue-100"
-                  onClick={handleBrowseClick}
-                >
-                  Browse...
-                </Button>
-
-                {imagePreview && (
-                  <Button
-                    variant="outline"
-                    className="text-red-600 border-red-600 hover:bg-red-100"
-                    onClick={handleClearImage}
-                  >
-                    Clear
-                  </Button>
-                )}
-              </div>
-
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+          <h2 className="text-xl font-semibold mb-4 text-blue-800">
+            Game Details
+          </h2>
+          <div className="grid grid-cols-1 gap-4">
+            <div>
               <InputField
-                label="Or enter image URL"
-                id="thumbnail"
-                value={gameThumbnail}
-                onChange={(e) => {
-                  setGameThumbnail(e.target.value);
-                  setImagePreview(e.target.value);
-                }}
-                placeholder="Enter thumbnail URL"
+                label="Game Name"
+                id="gameName"
+                value={gameName}
+                onChange={(e) => setGameName(e.target.value)}
+                placeholder="Enter game name"
+                required
               />
             </div>
+            <div>
+              <label className="block text-gray-700 text-sm font-medium mb-2">
+                Thumbnail Image
+              </label>
+              <div className="flex flex-col space-y-4">
+                {imagePreview && (
+                  <div className="mb-2">
+                    <img
+                      src={imagePreview}
+                      alt="Thumbnail preview"
+                      className="h-32 w-auto object-contain border rounded"
+                    />
+                  </div>
+                )}
+
+                <div className="flex space-x-2">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    accept="image/*"
+                    className="hidden"
+                  />
+
+                  <Button
+                    variant="outline"
+                    className="text-blue-600 border-blue-600 hover:bg-blue-100"
+                    onClick={handleBrowseClick}
+                  >
+                    Browse...
+                  </Button>
+
+                  {imagePreview && (
+                    <Button
+                      variant="outline"
+                      className="text-red-600 border-red-600 hover:bg-red-100"
+                      onClick={handleClearImage}
+                    >
+                      Clear
+                    </Button>
+                  )}
+                </div>
+
+                <InputField
+                  label="Or enter image URL"
+                  id="thumbnail"
+                  value={gameThumbnail}
+                  onChange={(e) => {
+                    setGameThumbnail(e.target.value);
+                    setImagePreview(e.target.value);
+                  }}
+                  placeholder="Enter thumbnail URL"
+                />
+              </div>
+            </div>
+          </div>
+          <div className="mt-4">
+            <Button
+              variant="primary"
+              className="bg-blue-600 text-white hover:bg-blue-700"
+              onClick={handleUpdateGame}
+            >
+              Save Game Details
+            </Button>
           </div>
         </div>
-        <div className="mt-4">
-          <Button
-            variant="primary"
-            className="bg-blue-600 text-white hover:bg-blue-700"
-            onClick={handleUpdateGame}
-          >
-            Save Game Details
-          </Button>
-        </div>
-      </div>
 
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-blue-800">Questions</h2>
-          <Button
-            variant="primary"
-            className="bg-blue-600 text-white hover:bg-blue-700"
-            onClick={() => setOpenNewQuestionDialog(true)}
-          >
-            Add New Question
-          </Button>
-        </div>
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold text-blue-800">Questions</h2>
+            <Button
+              variant="primary"
+              className="bg-blue-600 text-white hover:bg-blue-700"
+              onClick={() => setOpenNewQuestionDialog(true)}
+            >
+              Add New Question
+            </Button>
+          </div>
 
-        {questions.length === 0 ? (
-          <p className="text-gray-600">
-            No questions added yet. Add your first question!
-          </p>
-        ) : (
-          <div className="space-y-4">
-            {questions.map((questionFormat, index) => {
-              // 使用工具函数提取问题对象
-              const question = extractQuestionFromFormat(questionFormat);
-              
-              return (
-                <div
-                  key={index}
-                  className="border rounded-lg p-4 hover:bg-gray-50 transition-colors duration-200"
-                >
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <h3 className="font-semibold text-lg">
-                        {question?.text || `Question ${index + 1}`}
-                      </h3>
-                      <p className="text-gray-600 text-sm">
-                        Type: {question?.type || "Single Choice"} | Time:{" "}
-                        {question?.duration || question?.timeLimit || 30}s | Points:{" "}
-                        {question?.points || 10}
-                      </p>
-                    </div>
-                    <div className="flex space-x-2">
-                      <Button
-                        variant="outline"
-                        size="small"
-                        className="text-blue-600 border-blue-600 hover:bg-blue-100"
-                        onClick={() => handleNavigateToQuestion(index)}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        variant="danger"
-                        size="small"
-                        className="bg-red-600 text-white hover:bg-red-700"
-                        onClick={() => handleDeleteQuestion(index)}
-                      >
-                        Delete
-                      </Button>
+          {questions.length === 0 ? (
+            <p className="text-gray-600">
+              No questions added yet. Add your first question!
+            </p>
+          ) : (
+            <div className="space-y-4">
+              {questions.map((questionFormat, index) => {
+                // 使用工具函数提取问题对象
+                const question = extractQuestionFromFormat(questionFormat);
+                
+                return (
+                  <div
+                    key={index}
+                    className="border rounded-lg p-4 hover:bg-gray-50 transition-colors duration-200"
+                  >
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h3 className="font-semibold text-lg">
+                          {question?.text || `Question ${index + 1}`}
+                        </h3>
+                        <p className="text-gray-600 text-sm">
+                          Type: {question?.type || "Single Choice"} | Time:{" "}
+                          {question?.duration || question?.timeLimit || 30}s | Points:{" "}
+                          {question?.points || 10}
+                        </p>
+                      </div>
+                      <div className="flex space-x-2">
+                        <Button
+                          variant="outline"
+                          size="small"
+                          className="text-blue-600 border-blue-600 hover:bg-blue-100"
+                          onClick={() => handleNavigateToQuestion(index)}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          variant="danger"
+                          size="small"
+                          className="bg-red-600 text-white hover:bg-red-700"
+                          onClick={() => handleDeleteQuestion(index)}
+                        >
+                          Delete
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {openNewQuestionDialog && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+            <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6">
+              <h2 className="text-xl font-semibold mb-4 text-blue-800">
+                Add New Question
+              </h2>
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-2">Question Type</label>
+                <select
+                  className="w-full p-2 border rounded-md"
+                  value={newQuestionType}
+                  onChange={(e) => setNewQuestionType(e.target.value)}
+                >
+                  <option value="single">Single Choice</option>
+                  <option value="multiple">Multiple Choice</option>
+                  <option value="judgement">Judgement</option>
+                </select>
+              </div>
+              <div className="flex justify-end space-x-2 mt-6">
+                <Button
+                  variant="secondary"
+                  className="bg-gray-600 text-white hover:bg-gray-700"
+                  onClick={() => setOpenNewQuestionDialog(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  className="bg-blue-600 text-white hover:bg-blue-700"
+                  onClick={handleAddQuestion}
+                >
+                  Create
+                </Button>
+              </div>
+            </div>
           </div>
         )}
+
+        <ErrorPopup
+          message={error}
+          show={showError}
+          onClose={() => setShowError(false)}
+        />
+
+        <SuccessPopup
+          message={success}
+          show={showSuccess}
+          onClose={() => setShowSuccess(false)}
+        />
       </div>
-
-      {openNewQuestionDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6">
-            <h2 className="text-xl font-semibold mb-4 text-blue-800">
-              Add New Question
-            </h2>
-            <div className="mb-4">
-              <label className="block text-gray-700 mb-2">Question Type</label>
-              <select
-                className="w-full p-2 border rounded-md"
-                value={newQuestionType}
-                onChange={(e) => setNewQuestionType(e.target.value)}
-              >
-                <option value="single">Single Choice</option>
-                <option value="multiple">Multiple Choice</option>
-                <option value="judgement">Judgement</option>
-              </select>
-            </div>
-            <div className="flex justify-end space-x-2 mt-6">
-              <Button
-                variant="secondary"
-                className="bg-gray-600 text-white hover:bg-gray-700"
-                onClick={() => setOpenNewQuestionDialog(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                className="bg-blue-600 text-white hover:bg-blue-700"
-                onClick={handleAddQuestion}
-              >
-                Create
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <ErrorPopup
-        message={error}
-        show={showError}
-        onClose={() => setShowError(false)}
-      />
-
-      <SuccessPopup
-        message={success}
-        show={showSuccess}
-        onClose={() => setShowSuccess(false)}
-      />
-    </div>
     </div>
   );
 };
