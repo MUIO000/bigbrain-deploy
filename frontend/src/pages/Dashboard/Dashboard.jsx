@@ -128,7 +128,7 @@ const Dashboard = () => {
 
     if (game.questions && game.questions.length > 0) {
       totalDuration = game.questions.reduce((total, question) => {
-        return total + (parseInt(question[0].duration) || 0);
+        return total + (parseInt(question.duration) || 0);
       }, 0);
     }
 

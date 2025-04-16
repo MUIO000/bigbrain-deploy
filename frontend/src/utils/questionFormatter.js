@@ -9,10 +9,9 @@
  */
 export const formatQuestionForBackend = (questionObj) => {
   // 确保问题对象是有效的
-  if (!questionObj) return [[{}]];
+  if (!questionObj) return {};
   
-  // 返回正确的嵌套格式 [ [ [Object] ] ]
-  return [ { ...questionObj } ];
+  return  { ...questionObj } ;
 };
 
 /**
@@ -56,23 +55,26 @@ export const extractQuestionFromFormat = (questionData) => {
  * @param {Array} answers - 答案数组，包含 id, text, isCorrect 属性
  * @returns {Object} 格式化后的问题对象
  */
-export const prepareQuestionForSave = (questionObj, answers) => {
-  // 提取正确答案的文本
-  const correctAnswers = answers
-    .filter(answer => answer.isCorrect)
-    .map(answer => answer.text);
-  
-  // 将答案转换为 Answers 格式（只包含 Answer 属性）
-  const formattedAnswers = answers.map(answer => ({
-    Answer: answer.text
-  }));
-  
-  // 返回格式化的问题对象
-  return {
-    ...questionObj,
-    correctAnswers: correctAnswers, // 存储正确答案的文本数组
-    Answers: formattedAnswers, // 使用指定的Answers格式
-  };
+export const prepareQuestionForSave = (question, answers) => {
+  // 处理判断题的特殊情况
+  if (question.type === "judgement" || (answers.length === 1 && answers[0].text === "True/False")) {
+    // 判断题的结果：如果"True/False"被标记为正确，则为True，否则为False
+    const isTrue = answers.some(answer => answer.text === "True/False" && answer.isCorrect);
+    return {
+      correctAnswers: isTrue ? ["True/False"] : ["False"], // False显式存储为"False"而不是空数组
+      answers: [{ text: "True/False" }] // 判断题始终只有一个答案选项
+    };
+  } else {
+    // 非判断题的正常处理逻辑
+    const correctAnswers = answers
+      .filter(answer => answer.isCorrect)
+      .map(answer => answer.text);
+      
+    return {
+      correctAnswers,
+      answers: answers.map(answer => ({ text: answer.text }))
+    };
+  }
 };
 
 /**
@@ -141,7 +143,7 @@ export const createDefaultQuestion = (questionType = "single") => {
     defaultAnswers = [
       { Answer: "True/False" }
     ];
-    correctAnswers = []; // 默认为False
+    correctAnswers = ["False"]; // 默认为False
   } else {
     // 其他类型的问题默认有两个选项
     defaultAnswers = [
