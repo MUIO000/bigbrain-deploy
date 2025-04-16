@@ -1,227 +1,210 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import PlayerQuestion from "../../components/PlayerQuestion";
-import Button from "../../components/Button";
-import ErrorPopup from "../../components/ErrorPopup";
+import { useState, useEffect, useRef } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import {
-  hasGameStarted,
-  getQuestion,
-  submitAnswers,
-} from "../../api/playerApi";
+  getPlayerStatus,
+  getPlayerQuestion,
+  getPlayerCorrectAnswer,
+  submitPlayerAnswer,
+} from "../../api/player";
+import ErrorPopup from "../../components/ErrorPopup";
+import GameQuestion from "./GameQuestion";
+import WaitingScreen from "./WaitingScreen";
 
 const PlayerGame = () => {
-  const { playerId } = useParams();
   const navigate = useNavigate();
-  const [playerName, setPlayerName] = useState("");
-  const [gameStarted, setGameStarted] = useState(false);
+  const { playerId } = useParams();
+
+  // 使用玩家ID作为键的一部分获取玩家名称
+  const playerName =
+    localStorage.getItem(`playerName_${playerId}`) || "Anonymous";
+
+  // 组件状态
   const [question, setQuestion] = useState(null);
+  const [selectedAnswers, setSelectedAnswers] = useState([]);
   const [timeRemaining, setTimeRemaining] = useState(null);
-  const [answersSubmitted, setAnswersSubmitted] = useState(false);
+  const [correctAnswers, setCorrectAnswers] = useState(null);
   const [error, setError] = useState("");
   const [showError, setShowError] = useState(false);
+  const [lastQuestionId, setLastQuestionId] = useState(-1);
+  const answerFetchingRef = useRef(false);
 
-  // 使用 ref 来跟踪轮询状态
-  const pollingRef = useRef(true);
+  // 新增: 分数和统计状态
+  const [stats, setStats] = useState({
+    score: 0,
+    correctAnswers: 0,
+    incorrectAnswers: 0,
+    questionsAnswered: 0,
+    responseTimeTotal: 0,
+  });
 
-  // 初始化时从本地存储获取玩家名称
+  // Refs
+  const currentQuestionRef = useRef(null);
+  const timerRef = useRef(null);
+  const pollingRef = useRef(null);
+  const hasSubmittedRef = useRef(false);
+  const questionStartTimeRef = useRef(null);
+  const lastQuestionIdRef = useRef(-1);
+
+  // 1. 使用 useRef 来跟踪最新的游戏状态
+  const gameStateRef = useRef("waiting");
+
+  // 修改 useState 初始化，并添加跟踪逻辑
+  const [gameState, setGameState] = useState(() => {
+    // 尝试从本地存储恢复游戏状态
+    const savedState = localStorage.getItem(`gameState_${playerId}`);
+    const initialState = savedState || "waiting";
+    gameStateRef.current = initialState;
+    return initialState;
+  });
+
+  // 2. 创建一个包装函数来更新游戏状态，确保同时更新 ref 和 localStorage
+  const updateGameState = (newState) => {
+    console.log(`更新游戏状态: ${gameState} -> ${newState}`);
+    // 更新 ref (同步)
+    gameStateRef.current = newState;
+    // 保存到 localStorage (同步)
+    localStorage.setItem(`gameState_${playerId}`, newState);
+    // 更新 React 状态 (异步)
+    setGameState(newState);
+  };
+
+  // 轮询游戏状态
   useEffect(() => {
-    const storedName = localStorage.getItem(`player_${playerId}_name`);
-    if (storedName) {
-      setPlayerName(storedName);
+    if (!playerId) {
+      navigate("/play");
+      return;
     }
-  }, [playerId]);
 
-  // 轮询检查游戏是否已经开始
-  useEffect(() => {
-    const checkGameStatus = async () => {
-      if (!pollingRef.current) return;
-
+    // 尝试从localStorage恢复统计数据
+    const savedStats = localStorage.getItem(`playerStats_${playerId}`);
+    if (savedStats) {
       try {
-        const started = await hasGameStarted(playerId);
-        setGameStarted(started);
-
-        if (started && !answersSubmitted) {
-          // 如果游戏已开始且答案未提交，获取当前问题
-          fetchCurrentQuestion();
-        }
-      } catch (err) {
-        console.error("Error checking game status:", err);
+        setStats(JSON.parse(savedStats));
+      } catch (e) {
+        console.error("Failed to parse saved stats:", e);
       }
+    }
 
+    // 开始轮询游戏状态
+    startPolling();
+
+    // 清除轮询
+    return () => {
       if (pollingRef.current) {
-        setTimeout(checkGameStatus, 1000);
+        clearInterval(pollingRef.current);
+      }
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
       }
     };
+  }, [playerId, navigate]);
 
+  // 启动游戏状态轮询
+  const startPolling = () => {
+    // 立即执行一次
     checkGameStatus();
 
-    return () => {
-      pollingRef.current = false;
-    };
-  }, [playerId, answersSubmitted]);
+    // 设置轮询间隔
+    pollingRef.current = setInterval(() => {
+      checkGameStatus();
+    }, 2000); // 从1000改为2000毫秒
+  };
+
+  // 检查游戏状态
+  const checkGameStatus = async () => {
+    try {
+      const statusData = await getPlayerStatus(playerId);
+      console.log("游戏状态:", statusData);
+      // 使用 ref 获取最新状态，而不是状态变量
+      console.log("当前游戏状态 (ref):", gameStateRef.current);
+      console.log("当前游戏状态 (state):", gameState);
+      
+      if (statusData.started) {
+        // 使用 ref 进行比较
+        if (gameStateRef.current === "answered") {
+          // 如果已经回答，只检查是否有新问题
+          const hasNewQuestion = await fetchCurrentQuestion();
+          if (hasNewQuestion) {
+            // 有新问题时才设置active状态
+            updateGameState("active");
+            console.log("因为answer游戏状态更新为active");
+            answerFetchingRef.current = false; // 重置标志
+          }
+        } else if (gameStateRef.current === "waiting") {
+          // 如果在等待中，检查是否有问题并设置状态
+          const hasQuestion = await fetchCurrentQuestion();
+          if (hasQuestion) {
+            updateGameState("active");
+            console.log("游戏状态更新为active");
+          }
+        } else if (gameStateRef.current === "active") {
+          // 如果已经是active状态，更新但不重置状态
+          await fetchCurrentQuestion();
+        }
+      } else if (statusData.finished) {
+        // 游戏已结束，前往结果页面
+        console.log("游戏已结束，前往结果页面");
+
+        // 保存最终统计数据到localStorage
+        savePlayerStats();
+
+        // 跳转到结果页面
+        navigate(`/play/results/${playerId}`);
+      }
+    } catch (error) {
+      console.error("检查游戏状态出错:", error);
+      navigate(`/play/results/${playerId}`);
+    }
+  };
 
   // 获取当前问题
   const fetchCurrentQuestion = async () => {
     try {
-      const Data = await getQuestion(playerId);
-      const questionData = Data.question[0];
-      console.log("数据:", questionData);
-      if (questionData) {
+      console.log("尝试获取当前问题...");
+      const responseData = await getPlayerQuestion(playerId);
+      if (responseData && responseData.question) {
+        console.log("获取问题成功:", responseData.question);
+        const questionData = responseData.question;
+        // 使用问题 ID 作为唯一标识，而不是不存在的 position
+        const questionId = responseData.question.id || 0;
         setQuestion(questionData);
-        console.log("获取到的问题数据:", questionData);
-        // 计算剩余时间
-        if (questionData.isoTimeLastQuestionStarted) {
-          const startTime = new Date(questionData.isoTimeLastQuestionStarted);
-          const duration = questionData.duration || 30;
-          const endTime = new Date(startTime.getTime() + duration * 1000);
 
-          // 设置倒计时
-          const updateTimer = () => {
-            const now = new Date();
-            const remaining = Math.max(0, Math.floor((endTime - now) / 1000));
-            setTimeRemaining(remaining);
+        // 从服务器获取问题开始的时间
+        const isoTimeLastQuestionStarted =
+          responseData.question.isoTimeLastQuestionStarted;
 
-            if (remaining > 0 && pollingRef.current) {
-              requestAnimationFrame(updateTimer);
-            }
-          };
+        console.log("问题ID:", questionId);
+        console.log("上一个问题ID:", lastQuestionIdRef.current);
 
-          updateTimer();
-        }
-      }
-    } catch (err) {
-      console.error("Error fetching question:", err);
-      if (err.message === "Session has not started yet") {
-        // 如果收到这个错误，意味着游戏可能结束了，重置状态
-        setGameStarted(false);
-        setAnswersSubmitted(false);
-        setQuestion(null);
-      } else {
-        setError("获取问题失败: " + (err.message || "未知错误"));
-        setShowError(true);
-      }
-    }
-  };
+        // 比较是否为新问题（使用问题 ID 比较）
+        if (questionId !== lastQuestionIdRef.current) {
+          lastQuestionIdRef.current = questionId;
+          console.log("检测到新问题，ID:", questionId);
+          currentQuestionRef.current = questionData;
 
-  // 提交答案
-  const handleSubmitAnswers = async (selectedAnswers) => {
-    try {
-      // 为判断题特别处理答案格式
-      let finalAnswers;
-      if (question.type === "judgement") {
-        // 判断题: true 对应 1, false 对应空数组
-        finalAnswers = selectedAnswers.includes(1) ? [1] : [];
-      } else {
-        finalAnswers = selectedAnswers;
-      }
+          // 重置所有状态
+          setQuestion(questionData);
+          setSelectedAnswers([]);
+          hasSubmittedRef.current = false;
+          setCorrectAnswers(null);
+          setLastQuestionId(questionId);
 
-      await submitAnswers(playerId, finalAnswers);
-      setAnswersSubmitted(true);
-    } catch (err) {
-      console.error("Error submitting answers:", err);
-      setError("提交答案失败: " + (err.message || "未知错误"));
-      setShowError(true);
-    }
-  };
+          // 清除现有计时器
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
 
-  // 退出游戏
-  const handleLeaveGame = () => {
-    navigate("/player");
-  };
+          // 使用服务器时间计算剩余时间并启动计时器
+          if (questionData.duration && isoTimeLastQuestionStarted) {
+            console.log(
+              "计算剩余时间，使用服务器时间:",
+              isoTimeLastQuestionStarted
+            );
+            startTimerBasedOnServerTime(
+              isoTimeLastQuestionStarted,
+              questionData.duration
+            );
+          }
 
-  if (!gameStarted) {
-    return (
-      <div className="bg-gradient-to-br from-blue-50 to-blue-100 min-h-screen p-6">
-        <div className="max-w-lg mx-auto bg-white rounded-lg shadow-lg p-6 text-center">
-          <h1 className="text-2xl font-bold text-blue-800 mb-4">
-            等待游戏开始
-          </h1>
-          <p className="text-gray-600 mb-6">
-            {playerName ? `您好，${playerName}` : "玩家"}
-            ！主持人还未开始游戏，请耐心等待。
-          </p>
-          <div className="flex justify-center">
-            <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-          </div>
-          <Button
-            variant="secondary"
-            className="mt-6 bg-gray-600 text-white hover:bg-gray-700"
-            onClick={handleLeaveGame}
-          >
-            离开游戏
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  if (answersSubmitted) {
-    return (
-      <div className="bg-gradient-to-br from-blue-50 to-blue-100 min-h-screen p-6">
-        <div className="max-w-lg mx-auto bg-white rounded-lg shadow-lg p-6 text-center">
-          <h1 className="text-2xl font-bold text-green-600 mb-4">答案已提交</h1>
-          <p className="text-gray-600 mb-6">请等待主持人进入下一题。</p>
-          <div className="w-24 h-24 mx-auto bg-green-100 rounded-full flex items-center justify-center">
-            <svg
-              className="w-12 h-12 text-green-500"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M5 13l4 4L19 7"
-              ></path>
-            </svg>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="bg-gradient-to-br from-blue-50 to-blue-100 min-h-screen p-6">
-      <div className="max-w-3xl mx-auto">
-        <div className="mb-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-blue-800">
-            玩家: {playerName || "Anonymous"}
-          </h1>
-          <Button
-            variant="secondary"
-            size="small"
-            className="bg-gray-600 text-white hover:bg-gray-700"
-            onClick={handleLeaveGame}
-          >
-            离开游戏
-          </Button>
-        </div>
-
-        {question ? (
-          <PlayerQuestion
-            question={question}
-            onAnswerSubmit={handleSubmitAnswers}
-            timeRemaining={timeRemaining}
-          />
-        ) : (
-          <div className="bg-white rounded-lg shadow-lg p-6 text-center">
-            <div className="flex justify-center">
-              <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            </div>
-            <p className="mt-4 text-gray-600">加载问题中...</p>
-          </div>
-        )}
-      </div>
-
-      <ErrorPopup
-        message={error}
-        show={showError}
-        onClose={() => setShowError(false)}
-      />
-    </div>
-  );
-};
-
-export default PlayerGame;
+ 
