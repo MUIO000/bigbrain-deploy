@@ -525,7 +525,74 @@ const QuestionEditor = () => {
             )}
           </div>
 
-
+          {/* 修改答案选项的渲染 */}
+          {answers.map((answer) => (
+            <div
+              key={answer.id}
+              className="border rounded p-4 mb-3 hover:bg-gray-50 transition-colors duration-200"
+            >
+              <div className="flex items-start">
+                <div className="flex-grow mr-4">
+                  <InputField
+                    label={
+                      questionType === "judgement"
+                        ? "True/False Statement"
+                        : `Answer ${answer.id}`
+                    }
+                    id={`answer-${answer.id}`}
+                    value={answer.text}
+                    onChange={(e) =>
+                      handleAnswerTextChange(answer.id, e.target.value)
+                    }
+                    placeholder={
+                      questionType === "judgement"
+                        ? "Enter true/false statement"
+                        : "Enter answer text"
+                    }
+                    required
+                    disabled={questionType === "judgement"} // 判断题不能编辑答案文本
+                  />
+                </div>
+                <div className="flex items-center mt-8 space-x-4">
+                  <div className="flex items-center">
+                    <input
+                      type={
+                        questionType === "judgement"
+                          ? "checkbox"
+                          : questionType === "multiple"
+                            ? "checkbox"
+                            : "radio"
+                      }
+                      id={`correct-${answer.id}`}
+                      checked={answer.isCorrect}
+                      onChange={(e) =>
+                        handleAnswerCorrectChange(answer.id, e.target.checked)
+                      }
+                      className="mr-2"
+                    />
+                    <label htmlFor={`correct-${answer.id}`}>
+                      {questionType === "judgement"
+                        ? answer.isCorrect
+                          ? "True"
+                          : "False"
+                        : "Correct"}
+                    </label>
+                  </div>
+                  {questionType !== "judgement" && (
+                    <Button
+                      variant="danger"
+                      size="small"
+                      className="bg-red-600 text-white hover:bg-red-700"
+                      onClick={() => handleDeleteAnswer(answer.id)}
+                      disabled={answers.length <= 2}
+                    >
+                      Delete
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
 
           <div className="mt-6">
             <Button
