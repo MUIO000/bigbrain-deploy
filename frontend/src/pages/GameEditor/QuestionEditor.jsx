@@ -169,8 +169,21 @@ const QuestionEditor = () => {
         points: parseInt(points, 10),
         attachmentType: attachmentType !== "none" ? attachmentType : "",
         attachmentUrl: attachmentUrl.trim() || "",
-        ...prepareQuestionForSave({}, answers)
       };
+
+      // 处理答案和正确答案
+      if (questionType === "judgement") {
+        // 判断题特殊处理
+        const isTrue = answers[0]?.isCorrect === true;
+        updatedQuestionObj.answers = [{ text: "True/False" }];
+        updatedQuestionObj.correctAnswers = isTrue ? ["True/False"] : ["False"]; // 显式存储False
+      } else {
+        // 非判断题的处理
+        updatedQuestionObj.answers = answers.map(answer => ({ text: answer.text }));
+        updatedQuestionObj.correctAnswers = answers
+          .filter(answer => answer.isCorrect)
+          .map(answer => answer.text);
+      }
 
       // 使用工具函数格式化问题为后端需要的嵌套格式
       const formattedQuestion = formatQuestionForBackend(updatedQuestionObj);
