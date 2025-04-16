@@ -207,4 +207,193 @@ const PlayerGame = () => {
             );
           }
 
- 
+          return true;
+        } else if (currentQuestionRef.current) {
+          // 如果是同一问题，仅更新剩余时间（不重置其他状态）
+          setQuestion((prevQuestion) => {
+            // 如果问题内容发生变化（极少情况），才更新问题
+            if (JSON.stringify(prevQuestion) !== JSON.stringify(questionData)) {
+              return questionData;
+            }
+            return prevQuestion; // 否则保持不变
+          });
+
+          if (questionData.duration && isoTimeLastQuestionStarted) {
+            updateRemainingTime(
+              isoTimeLastQuestionStarted,
+              questionData.duration
+            );
+          }
+        }
+        return false;
+      }
+      return false;
+    } catch (error) {
+      console.error("获取问题失败:", error);
+      if (error.response && error.response.status === 400) {
+        console.log("问题不可用，可能游戏状态已改变");
+      } else {
+        setError("无法获取问题");
+        setShowError(true);
+      }
+      return false;
+    }
+  };
+
+  const startTimerBasedOnServerTime = (
+    isoTimeLastQuestionStarted,
+    duration
+  ) => {
+    // 清除现有定时器
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+
+    // 计算当前剩余时间
+    const serverStartTime = new Date(isoTimeLastQuestionStarted).getTime();
+    const currentTime = new Date().getTime();
+    const elapsedSeconds = Math.floor((currentTime - serverStartTime) / 1000);
+    const remainingSeconds = Math.max(0, duration - elapsedSeconds);
+
+    console.log("问题开始于:", new Date(serverStartTime).toLocaleTimeString());
+    console.log("当前时间:", new Date(currentTime).toLocaleTimeString());
+    console.log("已经过去秒数:", elapsedSeconds);
+    console.log("剩余秒数:", remainingSeconds);
+
+    // 设置剩余时间
+    setTimeRemaining(remainingSeconds);
+
+    // 记录问题开始时间（用服务器的时间）
+    questionStartTimeRef.current = new Date(serverStartTime);
+
+    // 如果还有剩余时间，启动计时器
+    if (remainingSeconds > 0) {
+      timerRef.current = setInterval(() => {
+        setTimeRemaining((prev) => {
+          if (prev <= 1) {
+            clearInterval(timerRef.current);
+
+            // 如果还有选择但尚未提交，则自动提交当前选择
+            if (selectedAnswers.length > 0 && !hasSubmittedRef.current) {
+              submitAnswer(selectedAnswers);
+            }
+
+            console.log("时间到，获取正确答案...");
+
+            // 获取正确答案 - 等待后端设置answerAvailable
+            setTimeout(() => {
+              fetchCorrectAnswers();
+            }, 1500);
+
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
+      // 如果时间已经到了，但还没有获取答案
+      if (gameState === "active" && !correctAnswers) {
+        console.log("时间已到，获取正确答案...");
+
+        // 如果还有选择但尚未提交，则自动提交当前选择
+        if (selectedAnswers.length > 0 && !hasSubmittedRef.current) {
+          submitAnswer(selectedAnswers);
+        }
+
+        // 获取正确答案
+        setTimeout(() => {
+          fetchCorrectAnswers();
+        }, 1500);
+      }
+    }
+  };
+
+  // 新增：更新剩余时间，但不重置计时器
+  const updateRemainingTime = (isoTimeLastQuestionStarted, duration) => {
+    // 计算当前剩余时间
+    const serverStartTime = new Date(isoTimeLastQuestionStarted).getTime();
+    const currentTime = new Date().getTime();
+    const elapsedSeconds = Math.floor((currentTime - serverStartTime) / 1000);
+    const remainingSeconds = Math.max(0, duration - elapsedSeconds);
+    // 检查时间是否已到但还未获取答案
+    if (
+      remainingSeconds <= 0 &&
+      gameState === "active" &&
+      !correctAnswers &&
+      !hasSubmittedRef.current
+    ) {
+      console.log("更新时检测到时间已到，正在获取正确答案...");
+
+      // 如果还有选择但尚未提交，则自动提交
+      if (selectedAnswers.length > 0) {
+        submitAnswer(selectedAnswers);
+      }
+      return;
+    }
+    // 如果计算出的剩余时间与当前显示的不一致，更新它
+    setTimeRemaining((prevTime) => {
+      if (Math.abs(prevTime - remainingSeconds) > 2) {
+        // 允许1-2秒的误差
+        console.log("更新剩余时间:", remainingSeconds);
+        return remainingSeconds;
+      }
+      return prevTime;
+    });
+  };
+
+  // 处理答案选择
+  const handleAnswerSelect = (answer) => {
+    // 如果时间已到，则不处理选择
+    if (timeRemaining <= 0 || gameState !== "active") return;
+
+    let newSelectedAnswers = [];
+
+    if (question.type === "judgement") {
+      // 对于判断题，切换选择
+      if (answer === true) {
+        newSelectedAnswers = ["True/False"];
+      } else {
+        newSelectedAnswers = ["False"];
+      }
+      setSelectedAnswers(newSelectedAnswers);
+
+      // 判断题选择后自动提交
+      submitAnswer(newSelectedAnswers);
+    } else if (question.type === "single") {
+      // 对于单选题，替换之前的选择
+      newSelectedAnswers = [answer];
+      setSelectedAnswers(newSelectedAnswers);
+
+      // 单选题选择后自动提交
+      submitAnswer(newSelectedAnswers);
+    } else if (question.type === "multiple") {
+      // 对于多选题，切换选择
+      if (selectedAnswers.includes(answer)) {
+        newSelectedAnswers = selectedAnswers.filter((a) => a !== answer);
+      } else {
+        newSelectedAnswers = [...selectedAnswers, answer];
+      }
+      setSelectedAnswers(newSelectedAnswers);
+      // 多选题需要手动点击提交按钮
+    }
+  };
+
+  // 提交答案到服务器
+  const submitAnswer = async (answers) => {
+    try {
+      console.log("提交答案:", answers);
+      localStorage.setItem(
+        `selectedAnswers_${playerId}_${lastQuestionId}`,
+        JSON.stringify(answers)
+      );
+
+      await submitPlayerAnswer(playerId, answers);
+      console.log("答案提交成功");
+
+      // 记录最后提交时间，用于计算响应时间
+      const answerTime = new Date();
+      const responseTime = questionStartTimeRef.current
+        ? (answerTime - questionStartTimeRef.current) / 1000
+        : 0;
+
+
