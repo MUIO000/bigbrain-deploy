@@ -12,6 +12,7 @@ const GameResults = () => {
 
   // 优先使用URL中的playerId，其次从localStorage获取
   const playerId = urlPlayerId || localStorage.getItem("playerId");
+  const totalScore = localStorage.getItem(`totalScore_${playerId}`) || 0;
 
   // 使用playerID特定的键获取玩家名称
   const playerName =
@@ -206,7 +207,7 @@ const GameResults = () => {
               <h2 className="text-lg font-medium mb-2 text-blue-800">
                 Your Score
               </h2>
-              <p className="text-4xl font-bold text-blue-900">{stats.score}</p>
+              <p className="text-4xl font-bold text-blue-900">{totalScore}</p>
             </div>
 
             <div className="flex flex-col items-center justify-center bg-green-50 p-6 rounded-lg">
