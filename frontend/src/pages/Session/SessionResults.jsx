@@ -228,5 +228,173 @@ const SessionResults = ({ sessionId: propSessionId }) => {
             <table className="min-w-full bg-white">
               <thead className="bg-gray-50">
                 <tr>
+                  <th className="py-2 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Rank
+                  </th>
+                  <th className="py-2 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Player
+                  </th>
+                  <th className="py-2 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Score
+                  </th>
+                  <th className="py-2 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Accuracy
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {topPlayers.map((player, index) => (
+                  <tr
+                    key={player.playerId}
+                    className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                  >
+                    <td className="py-2 px-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">
+                        {index === 0
+                          ? "🥇"
+                          : index === 1
+                          ? "🥈"
+                          : index === 2
+                          ? "🥉"
+                          : `${index + 1}`}
+                      </div>
+                    </td>
+                    <td className="py-2 px-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">
+                        {player.name}
+                      </div>
+                    </td>
+                    <td className="py-2 px-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {player.score} / {player.totalQuestions}
+                      </div>
+                    </td>
+                    <td className="py-2 px-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {Math.round(
+                          (player.score / player.totalQuestions) * 100
+                        )}
+                        %
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {topPlayers.length === 0 && (
+                  <tr>
+                    <td colSpan="4" className="py-4 text-center text-gray-500">
+                      No players found for this session
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* 图表部分 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <h2 className="text-xl font-semibold text-blue-800 mb-4">
+              Correct Answers Rate
+            </h2>
+            <CorrectAnswersChart data={chartData.correctAnswers} />
+          </div>
+
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <h2 className="text-xl font-semibold text-blue-800 mb-4">
+              Average Response Time
+            </h2>
+            <ResponseTimeChart data={chartData.responseTime} />
+          </div>
+        </div>
+
+        {/* 其他有趣的统计信息 */}
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <h2 className="text-xl font-semibold text-blue-800 mb-4">
+            Game Insights
+          </h2>
+
+          {/* 查找最快/最慢的问题 */}
+          {chartData.responseTime.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div className="p-4 bg-blue-50 rounded-lg">
+                <h3 className="font-medium text-blue-800 mb-2">
+                  Fastest Question
+                </h3>
+                {(() => {
+                  const fastest = [...chartData.responseTime].sort(
+                    (a, b) => a.avgResponseTime - b.avgResponseTime
+                  )[0];
+                  return fastest ? (
+                    <div>
+                      <p className="text-lg font-bold">
+                        {fastest.questionNumber}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        Average response time: {fastest.avgResponseTime} seconds
+                      </p>
+                    </div>
+                  ) : (
+                    <p>No data available</p>
+                  );
+                })()}
+              </div>
+
+              <div className="p-4 bg-blue-50 rounded-lg">
+                <h3 className="font-medium text-blue-800 mb-2">
+                  Slowest Question
+                </h3>
+                {(() => {
+                  const slowest = [...chartData.responseTime].sort(
+                    (a, b) => b.avgResponseTime - a.avgResponseTime
+                  )[0];
+                  return slowest ? (
+                    <div>
+                      <p className="text-lg font-bold">
+                        {slowest.questionNumber}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        Average response time: {slowest.avgResponseTime} seconds
+                      </p>
+                    </div>
+                  ) : (
+                    <p>No data available</p>
+                  );
+                })()}
+              </div>
+            </div>
+          )}
+
+          {/* 最容易/最困难的问题 */}
+          {chartData.correctAnswers.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="p-4 bg-green-50 rounded-lg">
+                <h3 className="font-medium text-green-800 mb-2">
+                  Easiest Question
+                </h3>
+                {(() => {
+                  const easiest = [...chartData.correctAnswers].sort(
+                    (a, b) => b.correctPercentage - a.correctPercentage
+                  )[0];
+                  return easiest ? (
+                    <div>
+                      <p className="text-lg font-bold">
+                        {easiest.questionNumber}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        {easiest.correctPercentage}% of players answered
+                        correctly
+                      </p>
+                    </div>
+                  ) : (
+                    <p>No data available</p>
+                  );
+                })()}
+              </div>
+
+
+    </div>
+  );
+};
 
 export default SessionResults;
