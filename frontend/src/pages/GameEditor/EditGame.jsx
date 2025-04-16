@@ -467,6 +467,7 @@ const EditGame = () => {
         onClose={() => setShowSuccess(false)}
       />
     </div>
+    </div>
   );
 };
 
