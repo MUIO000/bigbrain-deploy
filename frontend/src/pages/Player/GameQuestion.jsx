@@ -24,7 +24,7 @@ const GameQuestion = ({
   const getButtonStyle = (answer) => {
     const isSelected = Array.isArray(selectedAnswers) && (
       answer === true 
-        ? selectedAnswers.includes("True/False")
+        ? selectedAnswers.includes("True")
         : answer === false
           ? selectedAnswers.includes("False")
           : selectedAnswers.includes(answer)
@@ -51,9 +51,9 @@ const GameQuestion = ({
         <h2 className="text-2xl font-bold text-blue-800 mb-2">
           {question.text}
         </h2>
-        {question.duration && (
+        {question.points && (
           <p className="text-gray-600">
-            Time limit: {question.duration} seconds
+            Points: {question.points}
           </p>
         )}
       </div>
@@ -168,7 +168,7 @@ const GameQuestion = ({
             <p className="font-medium text-gray-700">Correct answer(s):</p>
             {question.type === "judgement" ? (
               <p>
-                {correctAnswers && correctAnswers.includes("True/False")
+                {correctAnswers && correctAnswers.includes("True")
                   ? "True"
                   : correctAnswers && correctAnswers.includes("False")
                   ? "False"

@@ -7,6 +7,7 @@ import SuccessPopup from "../../components/SuccessPopup";
 import { AuthContext } from "../../contexts/AuthContext";
 import { useContext } from "react";
 import { extractQuestionFromFormat } from "../../utils/questionFormatter";
+import StartSessionPopup from "../../components/StartSessionPopup";
 
 const SessionControl = ({ sessionId, sessionData: initialData }) => {
   const navigate = useNavigate();
@@ -16,6 +17,7 @@ const SessionControl = ({ sessionId, sessionData: initialData }) => {
   const [showError, setShowError] = useState(false);
   const [success, setSuccess] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showSessionPopup, setShowSessionPopup] = useState(false);
 
   // 使用 ref 来跟踪轮询状态
   const pollingRef = useRef(true);
@@ -34,6 +36,10 @@ const SessionControl = ({ sessionId, sessionData: initialData }) => {
       setShowError(true);
     }
   }, [gameId]);
+
+  const handleCloseSessionPopup = () => {
+    setShowSessionPopup(false);
+  };
 
   // 新增：返回Dashboard和Logout函数
   const handleLogout = () => {
@@ -387,6 +393,13 @@ const SessionControl = ({ sessionId, sessionData: initialData }) => {
             >
               {isGameStarted ? "Next Question" : "Start Game"}
             </Button>
+            <Button
+              variant="secondary"
+              className="bg-gray-600 text-white hover:bg-gray-700 ml-4"
+              onClick={() => setShowSessionPopup(true)}
+            >
+              Share Session Link
+            </Button>
           </div>
         </div>
 
@@ -418,6 +431,12 @@ const SessionControl = ({ sessionId, sessionData: initialData }) => {
           </div>
         </div>
       </div>
+
+      <StartSessionPopup
+        sessionId={sessionId}
+        show={showSessionPopup}
+        onClose={handleCloseSessionPopup}
+      />
 
       <ErrorPopup
         message={error}

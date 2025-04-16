@@ -351,7 +351,7 @@ const PlayerGame = () => {
     if (question.type === "judgement") {
       // 对于判断题，切换选择
       if (answer === true) {
-        newSelectedAnswers = ["True/False"];
+        newSelectedAnswers = ["True"];
       } else {
         newSelectedAnswers = ["False"];
       }
@@ -424,8 +424,8 @@ const PlayerGame = () => {
       const responseData = await getPlayerQuestion(playerId);
       const questionId = responseData.question.id || 0;
 
-      if (answerData && answerData.answerIds) {
-        setCorrectAnswers(answerData.answerIds);
+      if (answerData && answerData.answers) {
+        setCorrectAnswers(answerData.answers);
         // 使用更新函数而不是直接设置
         updateGameState("answered");
         console.log("游戏状态已更新为answered");
@@ -453,7 +453,7 @@ const PlayerGame = () => {
           currentSelectedAnswers &&
           currentSelectedAnswers.length > 0 &&
           JSON.stringify(currentSelectedAnswers.sort()) ===
-            JSON.stringify(answerData.answerIds.sort());
+            JSON.stringify(answerData.answers.sort());
 
         // 更新统计信息
         updateStats(isCorrect, responseData.question.points);
