@@ -182,7 +182,188 @@ const GameResults = () => {
     return (
       <div className="flex flex-col justify-center items-center min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
         <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        <p className="mt-4 text-blue-800 font-medium">
+          Loading your results...
+        </p>
+      </div>
+    );
+  }
 
+  const { correctPercentage, avgAnswerTime, performance } = getStatistics();
+
+  return (
+    <div className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 min-h-screen">
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-blue-800">Game Results</h1>
+            <p className="text-lg text-gray-600">Well done, {playerName}!</p>
+          </div>
+
+          {/* 分数显示 */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="flex flex-col items-center justify-center bg-blue-50 p-6 rounded-lg">
+              <h2 className="text-lg font-medium mb-2 text-blue-800">
+                Your Score
+              </h2>
+              <p className="text-4xl font-bold text-blue-900">{stats.score}</p>
+            </div>
+
+            <div className="flex flex-col items-center justify-center bg-green-50 p-6 rounded-lg">
+              <h2 className="text-lg font-medium mb-2 text-green-800">
+                Accuracy
+              </h2>
+              <p className="text-4xl font-bold text-green-700">
+                {correctPercentage}%
+              </p>
+            </div>
+
+            <div className="flex flex-col items-center justify-center bg-yellow-50 p-6 rounded-lg">
+              <h2 className="text-lg font-medium mb-2 text-yellow-800">
+                Avg. Time
+              </h2>
+              <p className="text-4xl font-bold text-yellow-700">
+                {avgAnswerTime}
+              </p>
+            </div>
+          </div>
+
+          {/* 详细统计 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <div>
+              <h2 className="text-xl font-medium mb-4 text-blue-800">
+                Performance
+              </h2>
+              <div className="grid grid-cols-1 gap-4">
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-600">Questions Answered</p>
+                  <p className="text-2xl font-bold text-blue-700">
+                    {stats.questionsAnswered}
+                  </p>
+                </div>
+
+                <div className="bg-green-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-600">Correct Answers</p>
+                  <p className="text-2xl font-bold text-green-700">
+                    {stats.correctAnswers}
+                  </p>
+                </div>
+
+                <div className="bg-red-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-600">Incorrect Answers</p>
+                  <p className="text-2xl font-bold text-red-700">
+                    {stats.incorrectAnswers}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* 进度条可视化 */}
+            <div className="flex flex-col justify-center">
+              <h2 className="text-xl font-medium mb-4 text-blue-800">
+                Answer Summary
+              </h2>
+              <div className="bg-white p-6 rounded-lg border border-gray-200">
+                <div className="mb-4">
+                  <div className="flex justify-between mb-1">
+                    <span className="text-sm font-medium text-green-700">
+                      Correct: {stats.correctAnswers}
+                    </span>
+                    <span className="text-sm font-medium text-gray-700">
+                      {correctPercentage}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-4">
+                    <div
+                      className="bg-green-500 h-4 rounded-full"
+                      style={{ width: `${correctPercentage}%` }}
+                    ></div>
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-4 h-4 bg-green-500 rounded-full"></div>
+                    <span>Correct: {stats.correctAnswers}</span>
+                  </div>
+                  <div className="flex items-center space-x-2 mt-2">
+                    <div className="w-4 h-4 bg-red-500 rounded-full"></div>
+                    <span>Incorrect: {stats.incorrectAnswers}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 使用现有图表组件 */}
+          {chartData.correctAnswers.length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-xl font-medium mb-4 text-blue-800 text-center">
+                Questions Performance
+              </h2>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-blue-50">
+                      <th className="border border-gray-200 px-4 py-2 text-left">
+                        Question
+                      </th>
+                      <th className="border border-gray-200 px-4 py-2 text-left">
+                        Result
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {chartData.correctAnswers.map((item, index) => (
+                      <tr
+                        key={index}
+                        className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                      >
+                        <td className="border border-gray-200 px-4 py-2">
+                          {item.questionNumber}
+                        </td>
+                        <td className="border border-gray-200 px-4 py-2">
+                          <div className="flex items-center">
+                            {item.correctPercentage === 100 ? (
+                              <>
+                                <div className="w-4 h-4 rounded-full bg-green-500 mr-2"></div>
+                                <span className="text-green-700 font-medium">
+                                  Correct
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                <div className="w-4 h-4 rounded-full bg-red-500 mr-2"></div>
+                                <span className="text-red-700 font-medium">
+                                  Incorrect
+                                </span>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {chartData.responseTime.length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-xl font-medium mb-4 text-blue-800 text-center">
+                Response Time Analysis
+              </h2>
+              <ResponseTimeChart data={chartData.responseTime} />
+            </div>
+          )}
+
+          {/* 评价和反馈 */}
+          <div className="bg-indigo-50 p-6 rounded-lg text-center">
+            <h2 className="text-lg font-medium mb-2 text-indigo-800 font-semibold">
+              Performance Feedback
+            </h2>
+            <p className="text-lg text-indigo-700">{performance}</p>
           </div>
         </div>
 
