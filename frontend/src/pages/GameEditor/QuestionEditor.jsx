@@ -7,7 +7,6 @@ import SuccessPopup from "../../components/SuccessPopup";
 import { getAllGames, updateGames } from "../../api/gameApi";
 import {
   extractQuestionFromFormat,
-  prepareQuestionForSave,
   prepareAnswersForDisplay,
   formatQuestionForBackend,
   createDefaultQuestion,
@@ -18,7 +17,7 @@ const QuestionEditor = () => {
   const navigate = useNavigate();
 
   // State for game data
-  const [allGames, setAllGames] = useState([]);
+  const [, setAllGames] = useState([]);
   const [currentGame, setCurrentGame] = useState(null);
   const [currentQuestion, setCurrentQuestion] = useState(null);
 
@@ -365,6 +364,7 @@ const QuestionEditor = () => {
 
   return (
     <div className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 min-h-screen">
+      <div className="max-w-5xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-blue-800">
           Edit Question {parseInt(questionId, 10) + 1}
@@ -616,6 +616,7 @@ const QuestionEditor = () => {
         show={showSuccess}
         onClose={() => setShowSuccess(false)}
       />
+    </div>
     </div>
   );
 };
