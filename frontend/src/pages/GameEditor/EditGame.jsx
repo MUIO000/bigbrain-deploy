@@ -36,6 +36,7 @@ const EditGame = () => {
     const fetchGame = async () => {
       try {
         setLoading(true);
+        // use the token from localStorage to fetch game data
         const gamesData = await getAllGames(token);
         if (gamesData && Array.isArray(gamesData.games)) {
           console.log("GameId param:", gameId);
@@ -80,6 +81,7 @@ const EditGame = () => {
     fetchGame();
   }, [gameId, token]);
 
+  // Handle file input change and preview image
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -90,6 +92,7 @@ const EditGame = () => {
       return;
     }
 
+    // Check file size (5MB limit)
     const reader = new FileReader();
     reader.onload = (event) => {
       const dataUrl = event.target.result;
@@ -99,10 +102,12 @@ const EditGame = () => {
     reader.readAsDataURL(file);
   };
 
+  // Handle browse button click
   const handleBrowseClick = () => {
     fileInputRef.current.click();
   };
 
+  // Handle clear image button click
   const handleClearImage = () => {
     setImagePreview("");
     setGameThumbnail("");
@@ -111,6 +116,7 @@ const EditGame = () => {
     }
   };
 
+  // Handle game update
   const handleUpdateGame = async () => {
     try {
       const updatedGame = {
@@ -140,38 +146,30 @@ const EditGame = () => {
     }
   };
 
+  // Handle adding a new question
   const handleAddQuestion = async () => {
     try {
-      // 使用工具函数创建默认问题
       const newQuestionObj = createDefaultQuestion(newQuestionType);
-      
-      // 使用工具函数格式化为后端需要的嵌套格式
       const formattedQuestion = formatQuestionForBackend(newQuestionObj);
       
       const updatedQuestions = [...questions, formattedQuestion];
       setQuestions(updatedQuestions);
 
-      // 获取最新的游戏列表
       const gamesData = await getAllGames(token);
       if (gamesData && Array.isArray(gamesData.games)) {
-        // 找到当前游戏的完整信息
         const currentGame = gamesData.games.find(
           (g) => String(g.id) === String(game.id)
         );
 
         if (currentGame) {
-          // 只更新当前游戏的问题部分，保留其他所有字段
           const updatedGame = {
             ...currentGame,
             questions: updatedQuestions,
           };
-
-          // 创建更新后的游戏列表
           const updatedGames = gamesData.games.map((g) =>
             String(g.id) === String(game.id) ? updatedGame : g
           );
 
-          // 调用API更新后端数据
           await updateGames(token, updatedGames);
 
           setSuccess("New question added successfully");
@@ -194,25 +192,20 @@ const EditGame = () => {
       updatedQuestions.splice(questionIndex, 1);
       setQuestions(updatedQuestions);
 
-      // 更新游戏对象，保留所有原始字段
       const updatedGame = {
-        ...game, // 保留所有原始字段，包括 createdAt
+        ...game, 
         id: game.id,
         name: gameName,
         owner: game.owner,
         questions: updatedQuestions,
         thumbnail: gameThumbnail,
       };
-
-      // 获取最新的游戏列表
       const gamesData = await getAllGames(token);
       if (gamesData && Array.isArray(gamesData.games)) {
-        // 用更新后的游戏替换相应的游戏
         const updatedGames = gamesData.games.map((g) =>
           String(g.id) === String(game.id) ? updatedGame : g
         );
 
-        // 调用API更新后端数据
         await updateGames(token, updatedGames);
 
         setSuccess("Question deleted successfully");

@@ -25,7 +25,7 @@ const Dashboard = () => {
   const [activeSession, setActiveSession] = useState(null);
   const [showSessionPopup, setShowSessionPopup] = useState(false);
 
-  // 添加停止会话的功能
+  // stop session state
   const [showStopSessionDialog, setShowStopSessionDialog] = useState(false);
   const [stoppedSessionId, setStoppedSessionId] = useState(null);
 
@@ -163,10 +163,8 @@ const Dashboard = () => {
       const res = await mutateGameState(token, gameId, "START");
       const response = res.data || res;
 
-      // 更新状态
+      // Check if the response contains a sessionId
       if (response && response.sessionId) {
-        console.log("成功开启游戏");
-        // 为了在UI中反映变化，更新本地游戏数据
         const updatedGames = [...games];
         updatedGames[gameIndex] = {
           ...updatedGames[gameIndex],
@@ -174,13 +172,13 @@ const Dashboard = () => {
         };
         setGames(updatedGames);
 
-        // 设置活跃游戏和会话
+        // set active session ID
         setActiveSession(response.sessionId);
 
-        // 在本地存储或状态中保存 gameId 和 sessionId 的映射关系
+        // Store the session ID in localStorage
         localStorage.setItem(`session_${response.sessionId}_gameId`, gameId);
 
-        // 显示会话信息弹窗
+        // Show the session popup
         setShowSessionPopup(true);
       }
     } catch (error) {
@@ -191,7 +189,7 @@ const Dashboard = () => {
     }
   };
 
-  // 添加停止会话函数
+  // stop session function
   const handleStopSession = async (gameIndex) => {
     try {
       const gameId = games[gameIndex].id;
@@ -205,10 +203,8 @@ const Dashboard = () => {
         return;
       }
 
-      // 调用API停止游戏会话
       await mutateGameState(token, gameId, "END");
 
-      // 更新本地状态
       const updatedGames = [...games];
       updatedGames[gameIndex] = {
         ...updatedGames[gameIndex],
@@ -216,10 +212,8 @@ const Dashboard = () => {
       };
       setGames(updatedGames);
 
-      // 设置当前停止的会话ID，用于弹窗
       setStoppedSessionId(sessionId);
 
-      // 显示停止会话确认弹窗
       setShowStopSessionDialog(true);
     } catch (error) {
       setError(
@@ -229,25 +223,25 @@ const Dashboard = () => {
     }
   };
 
-  // 添加查看结果的函数
+  // view results function
   const handleViewResults = () => {
-    // 使用activeGameIndex和stoppedSessionId导航到结果页面
     navigate(`/session/${stoppedSessionId}`);
     setShowStopSessionDialog(false);
   };
 
-  // 关闭会话弹窗
+  // close session popup function
   const handleCloseSessionPopup = () => {
     setShowSessionPopup(false);
   };
 
-  // 关闭停止会话弹窗
+  // close stop session dialog function
   const handleCloseStopSessionDialog = () => {
     setShowStopSessionDialog(false);
     setStoppedSessionId(null);
   };
 
-  // 确认删除游戏
+
+  // close error popup function
   const handleConfirmDelete = (index) => {
     setSelectedGameId(index);
     setOpenDeleteDialog(true);
