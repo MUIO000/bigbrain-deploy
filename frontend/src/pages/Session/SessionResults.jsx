@@ -5,6 +5,8 @@ import Button from "../../components/Button";
 import ErrorPopup from "../../components/ErrorPopup";
 import CorrectAnswersChart from "./Charts/CorrectAnswersChart";
 import ResponseTimeChart from "./Charts/ResponseTimeChart";
+import { AuthContext } from "../../contexts/AuthContext";
+import { useContext } from "react";
 
 const SessionResults = ({ sessionId: propSessionId }) => {
   const navigate = useNavigate();
@@ -21,6 +23,7 @@ const SessionResults = ({ sessionId: propSessionId }) => {
   });
 
   const token = localStorage.getItem("token");
+  const { logout } = useContext(AuthContext);
 
   useEffect(() => {
     const fetchResults = async () => {
@@ -118,6 +121,11 @@ const SessionResults = ({ sessionId: propSessionId }) => {
     navigate("/dashboard");
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
   if (loading) {
     return (
       <div className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 min-h-screen flex items-center justify-center">
@@ -187,13 +195,22 @@ const SessionResults = ({ sessionId: propSessionId }) => {
       <div className="max-w-5xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-blue-800">Session Results</h1>
-          <Button
-            variant="primary"
-            className="bg-blue-600 text-white hover:bg-blue-700"
-            onClick={handleBackToDashboard}
-          >
-            Back to Dashboard
-          </Button>
+          <div className="flex justify-end space-x-2 mb-4">
+            <Button
+              variant="primary"
+              className="bg-blue-600 text-white hover:bg-blue-700"
+              onClick={handleBackToDashboard}
+            >
+              Back to Dashboard
+            </Button>
+            <Button
+              variant="secondary"
+              className="bg-red-600 text-white hover:bg-red-700"
+              onClick={handleLogout}
+            >
+              Logout
+            </Button>
+          </div>
         </div>
 
         {/* 游戏摘要信息 */}

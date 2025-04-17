@@ -20,7 +20,6 @@ const ParticleBackground = ({ count = 24 }) => {
       });
     }
     setParticles(arr);
-    // eslint-disable-next-line
   }, []);
 
   // animation loop

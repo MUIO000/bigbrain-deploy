@@ -395,7 +395,7 @@ const Dashboard = () => {
                         size="small"
                         className="bg-green-600 text-white hover:bg-green-700"
                         onClick={() => handleStartSession(index)}
-                        disabled={game.questions.length === 0 || anyGameActive}
+                        disabled={anyGameActive}
                       >
                         Start
                       </Button>
