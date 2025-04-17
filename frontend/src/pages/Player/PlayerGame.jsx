@@ -14,11 +14,11 @@ const PlayerGame = () => {
   const navigate = useNavigate();
   const { playerId } = useParams();
 
-  // 使用玩家ID作为键的一部分获取玩家名称
+  // Use playerId as part of the key to get the player's name
   const playerName =
     localStorage.getItem(`playerName_${playerId}`) || "Anonymous";
 
-  // 组件状态
+  // Component state
   const [question, setQuestion] = useState(null);
   const [selectedAnswers, setSelectedAnswers] = useState([]);
   const [timeRemaining, setTimeRemaining] = useState(null);
@@ -28,7 +28,7 @@ const PlayerGame = () => {
   const [lastQuestionId, setLastQuestionId] = useState(-1);
   const answerFetchingRef = useRef(false);
 
-  // 新增: 分数和统计状态
+  // New: Score and stats state
   const [stats, setStats] = useState({
     score: 0,
     correctAnswers: 0,
@@ -45,37 +45,37 @@ const PlayerGame = () => {
   const questionStartTimeRef = useRef(null);
   const lastQuestionIdRef = useRef(-1);
 
-  // 1. 使用 useRef 来跟踪最新的游戏状态
+  // 1. Use useRef to track the latest game state
   const gameStateRef = useRef("waiting");
 
-  // 修改 useState 初始化，并添加跟踪逻辑
+  // Modify useState initialization and add tracking logic
   const [gameState, setGameState] = useState(() => {
-    // 尝试从本地存储恢复游戏状态
+    // Try to restore game state from localStorage
     const savedState = localStorage.getItem(`gameState_${playerId}`);
     const initialState = savedState || "waiting";
     gameStateRef.current = initialState;
     return initialState;
   });
 
-  // 2. 创建一个包装函数来更新游戏状态，确保同时更新 ref 和 localStorage
+  // 2. Create a wrapper function to update game state, ensuring ref and localStorage are updated
   const updateGameState = (newState) => {
-    console.log(`更新游戏状态: ${gameState} -> ${newState}`);
-    // 更新 ref (同步)
+    console.log(`Updating game state: ${gameState} -> ${newState}`);
+    // Update ref (sync)
     gameStateRef.current = newState;
-    // 保存到 localStorage (同步)
+    // Save to localStorage (sync)
     localStorage.setItem(`gameState_${playerId}`, newState);
-    // 更新 React 状态 (异步)
+    // Update React state (async)
     setGameState(newState);
   };
 
-  // 轮询游戏状态
+  // Poll game state
   useEffect(() => {
     if (!playerId) {
       navigate("/play");
       return;
     }
 
-    // 尝试从localStorage恢复统计数据
+    // Try to restore stats from localStorage
     const savedStats = localStorage.getItem(`playerStats_${playerId}`);
     if (savedStats) {
       try {
@@ -85,10 +85,10 @@ const PlayerGame = () => {
       }
     }
 
-    // 开始轮询游戏状态
+    // Start polling game state
     startPolling();
 
-    // 清除轮询
+    // Cleanup polling
     return () => {
       if (pollingRef.current) {
         clearInterval(pollingRef.current);
@@ -99,106 +99,106 @@ const PlayerGame = () => {
     };
   }, [playerId, navigate]);
 
-  // 启动游戏状态轮询
+  // Start polling game state
   const startPolling = () => {
-    // 立即执行一次
+    // Run once immediately
     checkGameStatus();
 
-    // 设置轮询间隔
+    // Set polling interval
     pollingRef.current = setInterval(() => {
       checkGameStatus();
-    }, 2000); // 从1000改为2000毫秒
+    }, 2000); // Changed from 1000 to 2000ms
   };
 
-  // 检查游戏状态
+  // Check game status
   const checkGameStatus = async () => {
     try {
       const statusData = await getPlayerStatus(playerId);
-      console.log("游戏状态:", statusData);
-      // 使用 ref 获取最新状态，而不是状态变量
-      console.log("当前游戏状态 (ref):", gameStateRef.current);
-      console.log("当前游戏状态 (state):", gameState);
+      console.log("Game status:", statusData);
+      // Use ref to get the latest state instead of the state variable
+      console.log("Current game state (ref):", gameStateRef.current);
+      console.log("Current game state (state):", gameState);
 
       if (statusData.started) {
-        // 使用 ref 进行比较
+        // Use ref for comparison
         if (gameStateRef.current === "answered") {
-          // 如果已经回答，只检查是否有新问题
+          // If already answered, only check for new question
           const hasNewQuestion = await fetchCurrentQuestion();
           if (hasNewQuestion) {
-            // 有新问题时才设置active状态
+            // Only set active state when there is a new question
             updateGameState("active");
-            console.log("因为answer游戏状态更新为active");
-            answerFetchingRef.current = false; // 重置标志
+            console.log("Game state updated to active due to answer");
+            answerFetchingRef.current = false; // Reset flag
           }
         } else if (gameStateRef.current === "waiting") {
-          // 如果在等待中，检查是否有问题并设置状态
+          // If waiting, check for question and set state
           const hasQuestion = await fetchCurrentQuestion();
           if (hasQuestion) {
             updateGameState("active");
-            console.log("游戏状态更新为active");
+            console.log("Game state updated to active");
           }
         } else if (gameStateRef.current === "active") {
-          // 如果已经是active状态，更新但不重置状态
+          // If already active, update but do not reset state
           await fetchCurrentQuestion();
         }
       } else if (statusData.finished) {
-        // 游戏已结束，前往结果页面
-        console.log("游戏已结束，前往结果页面");
+        // Game finished, go to results page
+        console.log("Game finished, navigating to results page");
 
-        // 保存最终统计数据到localStorage
+        // Save final stats to localStorage
         savePlayerStats();
 
-        // 跳转到结果页面
+        // Navigate to results page
         navigate(`/play/results/${playerId}`);
       }
     } catch (error) {
-      console.error("检查游戏状态出错:", error);
+      console.error("Error checking game status:", error);
       navigate(`/play/results/${playerId}`);
     }
   };
 
-  // 获取当前问题
+  // Fetch current question
   const fetchCurrentQuestion = async () => {
     try {
-      console.log("尝试获取当前问题...");
+      console.log("Attempting to fetch current question...");
       const responseData = await getPlayerQuestion(playerId);
       if (responseData && responseData.question) {
-        console.log("获取问题成功:", responseData.question);
+        console.log("Question fetched successfully:", responseData.question);
         const questionData = responseData.question;
-        // 使用问题 ID 作为唯一标识，而不是不存在的 position
+        // Use question ID as a unique identifier instead of a non-existent position
         const questionId = responseData.question.id || 0;
         setQuestion(questionData);
 
-        // 从服务器获取问题开始的时间
+        // Get the question start time from the server
         const isoTimeLastQuestionStarted =
           responseData.question.isoTimeLastQuestionStarted;
 
-        console.log("问题ID:", questionId);
-        console.log("上一个问题ID:", lastQuestionIdRef.current);
+        console.log("Question ID:", questionId);
+        console.log("Last question ID:", lastQuestionIdRef.current);
 
-        // 比较是否为新问题（使用问题 ID 比较）
+        // Compare if it is a new question (using question ID)
         if (questionId !== lastQuestionIdRef.current) {
           lastQuestionIdRef.current = questionId;
-          console.log("检测到新问题，ID:", questionId);
+          console.log("New question detected, ID:", questionId);
           currentQuestionRef.current = questionData;
 
-          // 重置所有状态
+          // Reset all state
           setQuestion(questionData);
           setSelectedAnswers([]);
           hasSubmittedRef.current = false;
           setCorrectAnswers(null);
           setLastQuestionId(questionId);
 
-          // 清除现有计时器
+          // Clear existing timer
           if (timerRef.current) {
             clearInterval(timerRef.current);
             timerRef.current = null;
           }
 
-          // 使用服务器时间计算剩余时间并启动计时器
+          // Use server time to calculate remaining time and start timer
           if (questionData.duration && isoTimeLastQuestionStarted) {
             console.log(
-              "计算剩余时间，使用服务器时间:",
+              "Calculating remaining time using server time:",
               isoTimeLastQuestionStarted
             );
             startTimerBasedOnServerTime(
@@ -209,13 +209,13 @@ const PlayerGame = () => {
 
           return true;
         } else if (currentQuestionRef.current) {
-          // 如果是同一问题，仅更新剩余时间（不重置其他状态）
+          // If it is the same question, only update remaining time (do not reset other state)
           setQuestion((prevQuestion) => {
-            // 如果问题内容发生变化（极少情况），才更新问题
+            // If the question content changes (rare case), update the question
             if (JSON.stringify(prevQuestion) !== JSON.stringify(questionData)) {
               return questionData;
             }
-            return prevQuestion; // 否则保持不变
+            return prevQuestion; // Otherwise, keep it unchanged
           });
 
           if (questionData.duration && isoTimeLastQuestionStarted) {
@@ -229,11 +229,11 @@ const PlayerGame = () => {
       }
       return false;
     } catch (error) {
-      console.error("获取问题失败:", error);
+      console.error("Failed to fetch question:", error);
       if (error.response && error.response.status === 400) {
-        console.log("问题不可用，可能游戏状态已改变");
+        console.log("Question unavailable, possibly game state changed");
       } else {
-        setError("无法获取问题");
+        setError("Failed to fetch question");
         setShowError(true);
       }
       return false;
@@ -244,43 +244,43 @@ const PlayerGame = () => {
     isoTimeLastQuestionStarted,
     duration
   ) => {
-    // 清除现有定时器
+    // Clear existing timer
     if (timerRef.current) {
       clearInterval(timerRef.current);
     }
 
-    // 计算当前剩余时间
+    // Calculate current remaining time
     const serverStartTime = new Date(isoTimeLastQuestionStarted).getTime();
     const currentTime = new Date().getTime();
     const elapsedSeconds = Math.floor((currentTime - serverStartTime) / 1000);
     const remainingSeconds = Math.max(0, duration - elapsedSeconds);
 
-    console.log("问题开始于:", new Date(serverStartTime).toLocaleTimeString());
-    console.log("当前时间:", new Date(currentTime).toLocaleTimeString());
-    console.log("已经过去秒数:", elapsedSeconds);
-    console.log("剩余秒数:", remainingSeconds);
+    console.log("Question started at:", new Date(serverStartTime).toLocaleTimeString());
+    console.log("Current time:", new Date(currentTime).toLocaleTimeString());
+    console.log("Elapsed seconds:", elapsedSeconds);
+    console.log("Remaining seconds:", remainingSeconds);
 
-    // 设置剩余时间
+    // Set remaining time
     setTimeRemaining(remainingSeconds);
 
-    // 记录问题开始时间（用服务器的时间）
+    // Record question start time (use server time)
     questionStartTimeRef.current = new Date(serverStartTime);
 
-    // 如果还有剩余时间，启动计时器
+    // If there is still time left, start the timer
     if (remainingSeconds > 0) {
       timerRef.current = setInterval(() => {
         setTimeRemaining((prev) => {
           if (prev <= 1) {
             clearInterval(timerRef.current);
 
-            // 如果还有选择但尚未提交，则自动提交当前选择
+            // If there are selections but not submitted, auto-submit the current selection
             if (selectedAnswers.length > 0 && !hasSubmittedRef.current) {
               submitAnswer(selectedAnswers);
             }
 
-            console.log("时间到，获取正确答案...");
+            console.log("Time's up, fetching correct answers...");
 
-            // 获取正确答案 - 等待后端设置answerAvailable
+            // Fetch correct answers - wait for the backend to set answerAvailable
             setTimeout(() => {
               fetchCorrectAnswers();
             }, 1500);
@@ -291,16 +291,16 @@ const PlayerGame = () => {
         });
       }, 1000);
     } else {
-      // 如果时间已经到了，但还没有获取答案
+      // If time is already up but the answer has not been fetched
       if (gameState === "active" && !correctAnswers) {
-        console.log("时间已到，获取正确答案...");
+        console.log("Time's up, fetching correct answers...");
 
-        // 如果还有选择但尚未提交，则自动提交当前选择
+        // If there are selections but not submitted, auto-submit
         if (selectedAnswers.length > 0 && !hasSubmittedRef.current) {
           submitAnswer(selectedAnswers);
         }
 
-        // 获取正确答案
+        // Fetch correct answers
         setTimeout(() => {
           fetchCorrectAnswers();
         }, 1500);
@@ -308,48 +308,48 @@ const PlayerGame = () => {
     }
   };
 
-  // 新增：更新剩余时间，但不重置计时器
+  // New: Update remaining time, but do not reset the timer
   const updateRemainingTime = (isoTimeLastQuestionStarted, duration) => {
-    // 计算当前剩余时间
+    // Calculate current remaining time
     const serverStartTime = new Date(isoTimeLastQuestionStarted).getTime();
     const currentTime = new Date().getTime();
     const elapsedSeconds = Math.floor((currentTime - serverStartTime) / 1000);
     const remainingSeconds = Math.max(0, duration - elapsedSeconds);
-    // 检查时间是否已到但还未获取答案
+    // Check if time is up but the answer has not been fetched
     if (
       remainingSeconds <= 0 &&
       gameState === "active" &&
       !correctAnswers &&
       !hasSubmittedRef.current
     ) {
-      console.log("更新时检测到时间已到，正在获取正确答案...");
+      console.log("Detected time's up while updating, fetching correct answers...");
 
-      // 如果还有选择但尚未提交，则自动提交
+      // If there are selections but not submitted, auto-submit
       if (selectedAnswers.length > 0) {
         submitAnswer(selectedAnswers);
       }
       return;
     }
-    // 如果计算出的剩余时间与当前显示的不一致，更新它
+    // If the calculated remaining time is inconsistent with the current display, update it
     setTimeRemaining((prevTime) => {
       if (Math.abs(prevTime - remainingSeconds) > 2) {
-        // 允许1-2秒的误差
-        console.log("更新剩余时间:", remainingSeconds);
+        // Allow 1-2 seconds of error
+        console.log("Updating remaining time:", remainingSeconds);
         return remainingSeconds;
       }
       return prevTime;
     });
   };
 
-  // 处理答案选择
+  // Handle answer selection
   const handleAnswerSelect = (answer) => {
-    // 如果时间已到，则不处理选择
+    // If time is up, do not process the selection
     if (timeRemaining <= 0 || gameState !== "active") return;
 
     let newSelectedAnswers = [];
 
     if (question.type === "judgement") {
-      // 对于判断题，切换选择
+      // For judgement questions, toggle selection
       if (answer === true) {
         newSelectedAnswers = ["True"];
       } else {
@@ -357,81 +357,81 @@ const PlayerGame = () => {
       }
       setSelectedAnswers(newSelectedAnswers);
 
-      // 判断题选择后自动提交
+      // Auto-submit for judgement questions
       submitAnswer(newSelectedAnswers);
     } else if (question.type === "single") {
-      // 对于单选题，替换之前的选择
+      // For single choice questions, replace the previous selection
       newSelectedAnswers = [answer];
       setSelectedAnswers(newSelectedAnswers);
 
-      // 单选题选择后自动提交
+      // Auto-submit for single choice questions
       submitAnswer(newSelectedAnswers);
     } else if (question.type === "multiple") {
-      // 对于多选题，切换选择
+      // For multiple choice questions, toggle selection
       if (selectedAnswers.includes(answer)) {
         newSelectedAnswers = selectedAnswers.filter((a) => a !== answer);
       } else {
         newSelectedAnswers = [...selectedAnswers, answer];
       }
       setSelectedAnswers(newSelectedAnswers);
-      // 多选题需要手动点击提交按钮
+      // Multiple choice questions require manual submission by clicking the submit button
     }
   };
 
-  // 提交答案到服务器
+  // Submit answers to the server
   const submitAnswer = async (answers) => {
     try {
-      console.log("提交答案:", answers);
+      console.log("Submitting answers:", answers);
       localStorage.setItem(
         `selectedAnswers_${playerId}_${lastQuestionId}`,
         JSON.stringify(answers)
       );
 
       await submitPlayerAnswer(playerId, answers);
-      console.log("答案提交成功");
+      console.log("Answers submitted successfully");
 
-      // 记录最后提交时间，用于计算响应时间
+      // Record the last submission time for calculating response time
       const answerTime = new Date();
       const responseTime = questionStartTimeRef.current
         ? (answerTime - questionStartTimeRef.current) / 1000
         : 0;
 
-      // 临时存储本次响应时间
+      // Temporarily store the response time for this question
       localStorage.setItem(
         `questionResponseTime_${playerId}_${lastQuestionId}`,
         responseTime.toString()
       );
 
-      // 标记为已提交，防止重复自动提交
+      // Mark as submitted to prevent duplicate auto-submissions
       hasSubmittedRef.current = true;
     } catch (error) {
-      console.error("提交答案失败:", error);
-      setError("无法提交答案");
+      console.error("Failed to submit answers:", error);
+      setError("Failed to submit answers");
       setShowError(true);
     }
   };
 
-  // 获取正确答案
+  // Fetch correct answers
   const fetchCorrectAnswers = async () => {
     try {
-      if (answerFetchingRef.current) return; // 防止重复请求
-      answerFetchingRef.current = true; // 设置标志，防止重复请求
+      if (answerFetchingRef.current) return; // Prevent duplicate requests
+      answerFetchingRef.current = true; // Set flag to prevent duplicate requests
 
-      console.log("获取正确答案...");
+      console.log("Fetching correct answers...");
       const answerData = await getPlayerCorrectAnswer(playerId);
-      console.log("正确答案数据:", answerData);
+      console.log("Correct answer data:", answerData);
 
       const responseData = await getPlayerQuestion(playerId);
       const questionId = responseData.question.id || 0;
 
       if (answerData && answerData.answers) {
         setCorrectAnswers(answerData.answers);
-        // 使用更新函数而不是直接设置
+        // Use update function instead of direct setting
         updateGameState("answered");
-        console.log("游戏状态已更新为answered");
+        console.log("Game state updated to answered");
 
         let currentSelectedAnswers = [...selectedAnswers];
-        // 尝试从本地存储中获取更准确的选择
+        // Try to get more accurate selections from localStorage
         try {
           console.log(localStorage);
           console.log("lastQuestionId:", lastQuestionId);
@@ -442,39 +442,39 @@ const PlayerGame = () => {
           );
           if (storedAnswers) {
             currentSelectedAnswers = JSON.parse(storedAnswers);
-            console.log("从本地存储恢复选择:", currentSelectedAnswers);
+            console.log("Restored selections from localStorage:", currentSelectedAnswers);
           }
         } catch (e) {
-          console.error("读取本地存储的选择失败:", e);
+          console.error("Failed to read selections from localStorage:", e);
         }
 
-        // 计算是否回答正确
+        // Calculate whether the answer is correct
         const isCorrect =
           currentSelectedAnswers &&
           currentSelectedAnswers.length > 0 &&
           JSON.stringify(currentSelectedAnswers.sort()) ===
             JSON.stringify(answerData.answers.sort());
 
-        // 更新统计信息
+        // Update stats
         updateStats(isCorrect, responseData.question.points);
 
-        // 保存统计数据到localStorage
+        // Save stats to localStorage
         savePlayerStats();
       }
     } catch (error) {
-      console.error("获取正确答案失败:", error);
-      setError("无法获取正确答案");
+      console.error("Failed to fetch correct answers:", error);
+      setError("Failed to fetch correct answers");
       setShowError(true);
     }
   };
 
-  // 新增: 更新玩家统计数据
+  // New: Update player stats
   const updateStats = (isCorrect, points) => {
     setStats((prevStats) => {
-      // 计算此题得分 (可以根据需要调整得分规则)
+      // Calculate the score for this question (adjust scoring rules as needed)
       const questionScore = isCorrect ? points : 0;
-      console.log("问题得分:", questionScore);
-      // 更新统计数据
+      console.log("Question score:", questionScore);
+      // Update stats
       const newStats = {
         score: prevStats.score + questionScore,
       };
@@ -489,17 +489,17 @@ const PlayerGame = () => {
     });
   };
 
-  // 新增: 保存玩家统计数据到localStorage
+  // New: Save player stats to localStorage
   const savePlayerStats = () => {
     try {
       localStorage.setItem(`playerStats_${playerId}`, JSON.stringify(stats));
-      console.log("玩家统计数据已保存:", stats);
+      console.log("Player stats saved:", stats);
     } catch (e) {
-      console.error("保存统计数据失败:", e);
+      console.error("Failed to save stats:", e);
     }
   };
 
-  // 提交多选题答案
+  // Submit answers for multiple choice questions
   const handleSubmit = () => {
     if (selectedAnswers.length === 0 || gameState !== "active") return;
     submitAnswer(selectedAnswers);
