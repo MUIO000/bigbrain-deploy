@@ -13,7 +13,7 @@ const SessionPage = () => {
   
   const token = localStorage.getItem('token');
   
-  // 加载会话数据
+  // load session data when component mounts or sessionId changes
   useEffect(() => {
     const fetchSessionData = async () => {
       try {
@@ -27,7 +27,6 @@ const SessionPage = () => {
     };
     
     fetchSessionData();
-    // 设置轮询，定期检查会话状态
     const interval = setInterval(fetchSessionData, 2000);
     
     return () => clearInterval(interval);
@@ -41,7 +40,7 @@ const SessionPage = () => {
     return <div className="error-message">{error}</div>;
   }
   
-  // 根据会话状态决定显示哪个组件
+  // display session control or results based on session status
   return sessionData.active ? (
     <SessionControl 
       sessionData={sessionData} 

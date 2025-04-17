@@ -13,10 +13,13 @@ const SessionResults = ({ sessionId: propSessionId }) => {
   const { sessionId: paramSessionId } = useParams();
   const sessionId = propSessionId || paramSessionId;
 
+  // State for session results
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showError, setShowError] = useState(false);
+
+  // State for chart data
   const [chartData, setChartData] = useState({
     correctAnswers: [],
     responseTime: [],
@@ -25,12 +28,15 @@ const SessionResults = ({ sessionId: propSessionId }) => {
   const token = localStorage.getItem("token");
   const { logout } = useContext(AuthContext);
 
+  // Fetch session results when component mounts
   useEffect(() => {
     const fetchResults = async () => {
       try {
         console.log("Fetching session results...");
         setLoading(true);
         const data = await getSessionResults(token, sessionId);
+
+        // Process results into chart data
         processNewFormatResults(data.results);
         setResults(data.results);
 
@@ -52,28 +58,25 @@ const SessionResults = ({ sessionId: propSessionId }) => {
     }
   }, [token, sessionId]);
 
-  // 处理新格式的API返回
+  // Process results into chart data
   const processNewFormatResults = (results) => {
     if (!Array.isArray(results) || results.length === 0) {
       return;
     }
 
-    // 计算每个问题的正确率
+    // Calculate correct answer rate and average response time for each question
     const correctAnswersData = [];
-    // 计算每个问题的平均回答时间
     const responseTimeData = [];
 
-    // 获取总问题数
     const totalQuestions = results[0].answers ? results[0].answers.length : 0;
 
     for (let i = 0; i < totalQuestions; i++) {
-      // 对每个问题进行分析
       const questionResponses = results
         .filter((player) => player.answers && player.answers.length > i)
         .map((player) => player.answers[i]);
 
       if (questionResponses.length > 0) {
-        // 计算正确答案率
+        // Calculate correct answer percentage
         const correctCount = questionResponses.filter(
           (resp) => resp && resp.correct
         ).length;
@@ -81,13 +84,13 @@ const SessionResults = ({ sessionId: propSessionId }) => {
           (correctCount / questionResponses.length) * 100
         );
 
-        // 计算平均响应时间（毫秒转换为秒）
+        // Calculate average response time (convert ms to seconds)
         const responseTimes = questionResponses
           .filter((resp) => resp && resp.questionStartedAt && resp.answeredAt)
           .map((resp) => {
             const startTime = new Date(resp.questionStartedAt).getTime();
             const endTime = new Date(resp.answeredAt).getTime();
-            return (endTime - startTime) / 1000; // 转换为秒
+            return (endTime - startTime) / 1000; // Convert to seconds
           });
 
         const avgResponseTime =
@@ -117,10 +120,12 @@ const SessionResults = ({ sessionId: propSessionId }) => {
     });
   };
 
+  // Navigate back to the dashboard
   const handleBackToDashboard = () => {
     navigate("/dashboard");
   };
 
+  // Logout and navigate to login page
   const handleLogout = () => {
     logout();
     navigate("/login");
@@ -137,7 +142,7 @@ const SessionResults = ({ sessionId: propSessionId }) => {
     );
   }
 
-  // 检查结果是否可用
+  // Check if results are available
   const isNewFormat = results && Array.isArray(results);
 
   if (!isNewFormat) {
@@ -170,16 +175,15 @@ const SessionResults = ({ sessionId: propSessionId }) => {
     );
   }
 
-  // 根据API响应格式处理数据
+  // Process player rankings
   let playerRankings = [];
 
   if (isNewFormat) {
-    // 新API格式
     const totalQuestions = results[0]?.answers?.length || 0;
 
     playerRankings = results
       .map((player) => ({
-        playerId: player.name, // 使用name作为ID
+        playerId: player.name,
         name: player.name || "Anonymous",
         score: player.answers?.filter((ans) => ans.correct).length || 0,
         totalQuestions,
@@ -187,7 +191,7 @@ const SessionResults = ({ sessionId: propSessionId }) => {
       .sort((a, b) => b.score - a.score);
   }
 
-  // 仅显示前5名玩家
+  // Display top 5 players
   const topPlayers = playerRankings.slice(0, 5);
 
   return (
@@ -213,7 +217,7 @@ const SessionResults = ({ sessionId: propSessionId }) => {
           </div>
         </div>
 
-        {/* 游戏摘要信息 */}
+        {/* Game summary */}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
           <h2 className="text-xl font-semibold text-blue-800 mb-4">
             Game Summary
@@ -308,7 +312,7 @@ const SessionResults = ({ sessionId: propSessionId }) => {
           </div>
         </div>
 
-        {/* 图表部分 */}
+        {/* Charts */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div className="bg-white rounded-lg shadow-lg p-6">
             <h2 className="text-xl font-semibold text-blue-800 mb-4">
@@ -325,13 +329,12 @@ const SessionResults = ({ sessionId: propSessionId }) => {
           </div>
         </div>
 
-        {/* 其他有趣的统计信息 */}
+        {/* Game Insights */}
         <div className="bg-white rounded-lg shadow-lg p-6">
           <h2 className="text-xl font-semibold text-blue-800 mb-4">
             Game Insights
           </h2>
 
-          {/* 查找最快/最慢的问题 */}
           {chartData.responseTime.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div className="p-4 bg-blue-50 rounded-lg">
@@ -382,7 +385,6 @@ const SessionResults = ({ sessionId: propSessionId }) => {
             </div>
           )}
 
-          {/* 最容易/最困难的问题 */}
           {chartData.correctAnswers.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="p-4 bg-green-50 rounded-lg">
@@ -435,21 +437,18 @@ const SessionResults = ({ sessionId: propSessionId }) => {
             </div>
           )}
 
-          {/* 总体表现分析 */}
           {chartData.correctAnswers.length > 0 && (
             <div className="mt-6 p-4 bg-gray-50 rounded-lg">
               <h3 className="font-medium text-gray-800 mb-2 font-semibold">
                 Overall Performance
               </h3>
               {(() => {
-                // 计算总体平均正确率
                 const avgCorrectRate =
                   chartData.correctAnswers.reduce(
                     (sum, item) => sum + item.correctPercentage,
                     0
                   ) / chartData.correctAnswers.length;
 
-                // 计算平均响应时间
                 const avgResponseTime =
                   chartData.responseTime.reduce(
                     (sum, item) => sum + item.avgResponseTime,
