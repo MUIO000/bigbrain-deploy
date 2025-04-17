@@ -10,7 +10,7 @@ const PlayJoin = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // 提取URL参数中的session
+  // Get session ID from URL or query parameters
   const queryParams = new URLSearchParams(location.search);
   const querySessionId = queryParams.get('session');
 
