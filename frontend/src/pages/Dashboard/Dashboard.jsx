@@ -7,6 +7,7 @@ import SuccessPopup from "../../components/SuccessPopup";
 import { getAllGames, updateGames, mutateGameState } from "../../api/gameApi";
 import { AuthContext } from "../../contexts/AuthContext";
 import StartSessionPopup from "../../components/StartSessionPopup";
+import ParticleBackground from "../../components/ParticleBackground";
 
 const Dashboard = () => {
   const [games, setGames] = useState([]);
@@ -253,7 +254,8 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 min-h-screen">
+    <div className="relative min-h-screen w-full flex flex-col bg-gradient-to-br from-blue-400 via-blue-200 to-purple-200 overflow-x-hidden p-10">
+      <ParticleBackground />
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-4xl font-bold text-blue-800">Game Dashboard</h1>
         <div className="flex items-center space-x-3">
@@ -281,7 +283,7 @@ const Dashboard = () => {
           No games available. Create your first game!
         </p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
           {games.map((game, index) => {
             const { questionCount, totalDuration } = getGameStats(game);
             const isActive = Boolean(game.active);
@@ -289,14 +291,18 @@ const Dashboard = () => {
             return (
               <div
                 key={index}
-                className={`bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 ${
-                  isActive ? "bg-green-50" : ""
-                }`}
+                className={`
+                  bg-white/70 rounded-2xl shadow-xl
+                  overflow-hidden
+                  transition-all duration-300
+                  hover:-translate-y-3 hover:scale-105 hover:shadow-2xl
+                  ${isActive ? "bg-green-50 ring-2 ring-green-200" : ""}
+                `}
                 style={{
                   boxShadow: isActive
-                    ? "0 0 15px 5px rgba(52, 211, 153, 0.3)"
-                    : undefined,
-                  transition: "all 0.3s ease-in-out",
+                    ? "0 8px 32px 0 rgba(34,197,94,0.18), 0 1.5px 8px 0 rgba(52, 211, 153, 0.15)"
+                    : "0 4px 24px 0 rgba(59,130,246,0.10), 0 1.5px 8px 0 rgba(59,130,246,0.08)",
+                  transition: "all 0.3s cubic-bezier(.4,2,.3,1)",
                 }}
               >
                 <div
@@ -324,7 +330,7 @@ const Dashboard = () => {
                     </span>
                   )}
                 </div>
-                <div className={isActive ? "p-4 bg-green-50" : "p-4"}>
+                <div className={`${isActive ? "bg-green-50/70" : "bg-white/50"} p-4`}>
                   <h2
                     className={`text-xl font-semibold mb-2 ${
                       isActive ? "text-green-800" : "text-blue-800"

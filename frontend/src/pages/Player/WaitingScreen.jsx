@@ -99,7 +99,7 @@ const WaitingScreen = ({ playerName }) => {
   }, []);
 
   return (
-    <div className="flex flex-col justify-center items-center h-screen w-full bg-gradient-to-br from-blue-500 to-purple-600 overflow-hidden relative">
+    <div className="flex flex-col justify-center items-center h-screen w-full bg-gradient-to-br from-blue-500 to-purple-600">
       {/* 泡泡容器 */}
       <div 
         ref={containerRef}

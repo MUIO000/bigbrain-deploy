@@ -363,14 +363,14 @@ const QuestionEditor = () => {
 
   if (loading) {
     return (
-      <div className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 min-h-screen flex justify-center items-center">
+      <div className="p-6 bg-gradient-to-br from-blue-400 via-blue-200 to-purple-200 min-h-screen flex justify-center items-center">
         <div className="text-blue-600 text-xl">Loading question data...</div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 min-h-screen">
+    <div className="p-6 bg-gradient-to-br from-blue-400 via-blue-200 to-purple-200 min-h-screen">
       <div className="max-w-5xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-blue-800">

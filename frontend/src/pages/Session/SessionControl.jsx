@@ -196,7 +196,7 @@ const SessionControl = ({ sessionId, sessionData: initialData }) => {
   const isGameStarted = position >= 0;
 
   return (
-    <div className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 min-h-screen">
+    <div className="p-6 bg-gradient-to-br from-blue-400 via-blue-200 to-purple-200 min-h-screen">
       <div className="max-w-5xl mx-auto">
         <div className="flex justify-end space-x-2 mb-4">
           <Button

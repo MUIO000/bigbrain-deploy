@@ -176,7 +176,6 @@ const Register = () => {
         onClose={() => setError(null)}
       />
       
-      {/* 页脚 */}
       <div className="text-white/40 text-xs mt-8 text-center z-10">
         © 2025 BigBrain Quiz Platform. Challenge your mind.
       </div>

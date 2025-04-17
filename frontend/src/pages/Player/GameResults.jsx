@@ -179,7 +179,7 @@ const GameResults = () => {
 
   if (loading) {
     return (
-      <div className="flex flex-col justify-center items-center min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
+      <div className="flex flex-col justify-center items-center min-h-screen bg-gradient-to-br from-blue-400 via-blue-200 to-purple-200">
         <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
         <p className="mt-4 text-blue-800 font-medium">
           Loading your results...
@@ -191,7 +191,7 @@ const GameResults = () => {
   const { correctPercentage, avgAnswerTime, performance } = getStatistics();
 
   return (
-    <div className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 min-h-screen">
+    <div className="p-6 bg-gradient-to-br from-blue-400 via-blue-200 to-purple-200 min-h-screen">
       <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
           <div className="text-center mb-8">

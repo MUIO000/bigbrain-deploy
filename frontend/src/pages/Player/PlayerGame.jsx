@@ -506,9 +506,9 @@ const PlayerGame = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-blue-200 to-purple-200">
       {gameState === "waiting" && (
-        <div className="w-full h-screen mx-auto">
+        <div>
           <WaitingScreen playerName={playerName} />
         </div>
       )}
