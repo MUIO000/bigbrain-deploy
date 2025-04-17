@@ -56,34 +56,34 @@ const QuestionEditor = () => {
           if (foundGame) {
             setCurrentGame(foundGame);
 
-            // 检查问题是否存在
+            // check if questionId is valid
             if (
               Array.isArray(foundGame.questions) &&
               foundGame.questions[numQuestionId]
             ) {
-              // 使用工具函数提取问题对象
+              // use the existing question
               const question = extractQuestionFromFormat(
                 foundGame.questions[numQuestionId]
               );
               setCurrentQuestion(question);
 
-              // 设置表单值
+              // set question text and type
               setQuestionText(question?.text || "");
               setQuestionType(question?.type || "single");
 
-              // 使用 duration 替代 timeLimit
+              // set time limit and points
               setTimeLimit(question?.duration || question?.timeLimit || 30);
               setPoints(question?.points || 10);
 
-              // 设置答案选项
+              // set answers
               const answersWithCorrectFlag = prepareAnswersForDisplay(question);
               setAnswers(answersWithCorrectFlag);
 
-              // 设置附件数据
+              // set attachment type and URL
               setAttachmentType(question?.attachmentType || "none");
               setAttachmentUrl(question?.attachmentUrl || "");
             } else {
-              // 使用工具函数创建新问题的默认值
+              // create a new question if not found
               const newQuestion = createDefaultQuestion("single");
 
               setCurrentQuestion(newQuestion);
@@ -111,11 +111,9 @@ const QuestionEditor = () => {
     fetchGameAndQuestion();
   }, [token, gameId, questionId, numGameId, numQuestionId]);
 
-  // 添加一个 useEffect 来监听问题类型变化
+  // set default question type and answers when the component mounts
   useEffect(() => {
-    // 当问题类型改变为判断题时
     if (questionType === "judgement") {
-      // 判断题只需要一个答案
       const judgementAnswer = {
         id: 1,
         text: "True/False",
@@ -123,7 +121,6 @@ const QuestionEditor = () => {
       };
       setAnswers([judgementAnswer]);
     } else if (answers.length < 2) {
-      // 如果从判断题切换回其他类型，确保至少有两个答案选项
       setAnswers([
         { id: 1, text: "Answer 1", isCorrect: true },
         { id: 2, text: "Answer 2", isCorrect: false },
@@ -136,24 +133,22 @@ const QuestionEditor = () => {
     navigate("/login");
   };
 
-  // 修改 handleSaveQuestion 函数，为判断题添加特殊验证
+  // save question function
   const handleSaveQuestion = async () => {
     try {
-      // 验证输入
       if (!questionText.trim()) {
         setError("Question text is required");
         setShowError(true);
         return;
       }
 
-      // 判断题的特殊验证逻辑
       if (questionType === "judgement") {
         if (answers.length !== 1) {
-          // 重置为一个答案
+          // reset answers to default for judgement question
           setAnswers([{ id: 1, text: "True/False", isCorrect: false }]);
         }
       } else {
-        // 非判断题的常规验证
+        // other question types
         if (answers.length < 2) {
           setError(
             "At least 2 answers are required for non-judgement questions"
@@ -177,25 +172,22 @@ const QuestionEditor = () => {
         }
       }
 
-      // 创建更新后的问题对象
+      // update question object
       const updatedQuestionObj = {
         id: currentQuestion?.id || Date.now(),
         text: questionText,
         type: questionType,
-        duration: parseInt(timeLimit, 10), // 使用 duration 替代 timeLimit
+        duration: parseInt(timeLimit, 10), 
         points: parseInt(points, 10),
         attachmentType: attachmentType !== "none" ? attachmentType : "",
         attachmentUrl: attachmentUrl.trim() || "",
       };
 
-      // 处理答案和正确答案
       if (questionType === "judgement") {
-        // 判断题特殊处理
         const isTrue = answers[0]?.isCorrect === true;
         updatedQuestionObj.answers = [{ text: "True/False" }];
         updatedQuestionObj.correctAnswers = isTrue ? ["True"] : ["False"]; // 显式存储False
       } else {
-        // 非判断题的处理
         updatedQuestionObj.answers = answers.map((answer) => ({
           text: answer.text,
         }));
@@ -204,34 +196,32 @@ const QuestionEditor = () => {
           .map((answer) => answer.text);
       }
 
-      // 使用工具函数格式化问题为后端需要的嵌套格式
+      // update question object for backend
       const formattedQuestion = formatQuestionForBackend(updatedQuestionObj);
 
-      // 更新游戏中的问题
+      // update the current game object with the new question
       const updatedQuestions = [...(currentGame.questions || [])];
       if (updatedQuestions.length <= numQuestionId) {
-        // 如果需要，添加空的问题
+        // fill the array with empty questions if needed
         for (let i = updatedQuestions.length; i <= numQuestionId; i++) {
           updatedQuestions.push(formatQuestionForBackend({}));
         }
       }
       updatedQuestions[numQuestionId] = formattedQuestion;
 
-      // 创建更新后的游戏对象，保留所有字段
+      // create a new game object with the updated questions
       const updatedGame = {
-        ...currentGame, // 保留所有原始字段
-        questions: updatedQuestions, // 更新问题列表
+        ...currentGame, 
+        questions: updatedQuestions, 
       };
 
-      // 获取最新的游戏列表
+      // update the game object in the backend
       const gamesData = await getAllGames(token);
       if (gamesData && Array.isArray(gamesData.games)) {
-        // 使用完整的游戏对象更新
         const updatedGames = gamesData.games.map((game) =>
           String(game.id) === String(currentGame.id) ? updatedGame : game
         );
 
-        // 调用 API 更新后端数据
         await updateGames(token, updatedGames);
 
         setSuccess("Question saved successfully");
@@ -246,9 +236,8 @@ const QuestionEditor = () => {
     }
   };
 
-  // 修改 handleAddAnswer 和 handleDeleteAnswer 函数
+  // handle adding and deleting answers
   const handleAddAnswer = () => {
-    // 判断题不允许添加更多答案
     if (questionType === "judgement") {
       setError("Judgement questions can only have one answer");
       setShowError(true);
@@ -270,8 +259,8 @@ const QuestionEditor = () => {
     setAnswers([...answers, newAnswer]);
   };
 
+  // handle deleting answers
   const handleDeleteAnswer = (answerId) => {
-    // 判断题不允许删除答案
     if (questionType === "judgement") {
       setError("Judgement questions must have exactly one answer");
       setShowError(true);
@@ -295,24 +284,21 @@ const QuestionEditor = () => {
     setAnswers(updatedAnswers);
   };
 
-  // 修改 handleAnswerCorrectChange 函数，使判断题可以切换正确性
+  // handle answer correctness change
   const handleAnswerCorrectChange = (answerId, isCorrect) => {
     let updatedAnswers = [...answers];
 
     if (questionType === "judgement") {
-      // 判断题可以切换答案的正确性（反转当前状态）
       updatedAnswers = updatedAnswers.map((a) =>
         a.id === answerId ? { ...a, isCorrect: !a.isCorrect } : a
       );
-    } else if (questionType === "single" && isCorrect) {
-      // 单选题逻辑保持不变
+    } else if (questionType === "single" && isCorrect) {  
       updatedAnswers = updatedAnswers.map((a) =>
         a.id === answerId
           ? { ...a, isCorrect: true }
           : { ...a, isCorrect: false }
       );
     } else {
-      // 多选题逻辑保持不变
       updatedAnswers = updatedAnswers.map((a) =>
         a.id === answerId ? { ...a, isCorrect } : a
       );
@@ -329,14 +315,12 @@ const QuestionEditor = () => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // 验证文件是否为图片
     if (!file.type.match("image.*")) {
       setError("Please select an image file (JPEG, PNG, GIF, etc.)");
       setShowError(true);
       return;
     }
 
-    // 验证文件大小 (限制为2MB)
     const maxSize = 2 * 1024 * 1024;
     if (file.size > maxSize) {
       setError("Image size should be less than 2MB");
@@ -344,7 +328,6 @@ const QuestionEditor = () => {
       return;
     }
 
-    // 读取文件并转换为base64
     const reader = new FileReader();
     reader.onload = (e) => {
       const base64Image = e.target.result;
@@ -523,7 +506,7 @@ const QuestionEditor = () => {
         </div>
 
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          {/* 修改 Answers 部分的标题和添加按钮 */}
+          {/* change the title */}
           <div className="flex justify-between items-center mb-4">
             <h3 className="font-semibold">
               {questionType === "judgement"
@@ -543,7 +526,7 @@ const QuestionEditor = () => {
             )}
           </div>
 
-          {/* 修改答案选项的渲染 */}
+          {/* use map to render answers */}
           {answers.map((answer) => (
             <div
               key={answer.id}
@@ -568,7 +551,7 @@ const QuestionEditor = () => {
                         : "Enter answer text"
                     }
                     required
-                    disabled={questionType === "judgement"} // 判断题不能编辑答案文本
+                    disabled={questionType === "judgement"} 
                   />
                 </div>
                 <div className="flex items-center mt-8 space-x-4">

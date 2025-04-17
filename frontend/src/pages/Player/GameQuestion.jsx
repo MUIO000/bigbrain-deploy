@@ -8,7 +8,7 @@ const GameQuestion = ({
   correctAnswers,
   gameState,
 }) => {
-  // 获取 YouTube 视频 ID
+  // Get YouTube video ID
   const getYoutubeVideoId = (url) => {
     if (!url) return "";
 
@@ -19,7 +19,7 @@ const GameQuestion = ({
     return match && match[2].length === 11 ? match[2] : "";
   };
   
-  // 获取选项按钮样式
+  // Get option button style
   const getButtonStyle = (answer) => {
     const isSelected = Array.isArray(selectedAnswers) && (
       answer === true 
@@ -29,10 +29,10 @@ const GameQuestion = ({
           : selectedAnswers.includes(answer)
     );
     
-    // 共同样式
+    // Common style
     const baseStyle = "w-full p-4 text-left rounded-md font-medium border-2 transition-all duration-200 focus:outline-none";
     
-    // 根据选中状态和游戏状态返回不同样式
+    // Return different styles based on selection and game state
     if (gameState !== "active") {
       return `${baseStyle} border-gray-300 bg-gray-100 text-gray-500 cursor-not-allowed`;
     }
@@ -57,7 +57,7 @@ const GameQuestion = ({
         )}
       </div>
 
-      {/* 附件（图片或视频） */}
+      {/* Attachment (image or video) */}
       {question.attachmentType === "image" && question.attachmentUrl && (
         <div className="mb-6">
           <img
@@ -85,7 +85,7 @@ const GameQuestion = ({
       )}
 
       <div className="mt-6">
-        {/* 判断题 */}
+        {/* Judgement question */}
         {question.type === "judgement" && (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <button
@@ -105,7 +105,7 @@ const GameQuestion = ({
           </div>
         )}
         
-        {/* 单选题和多选题 */}
+        {/* Single and multiple choice questions */}
         {(question.type === "single" || question.type === "multiple") && (
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             {Array.isArray(question.answers) &&
@@ -127,13 +127,13 @@ const GameQuestion = ({
           </div>
         )}
 
-        {/* 提交按钮（仅在多选题时显示） */}
+        {/* Submit button (only for multiple choice) */}
         {gameState === "active" && (
           <div className="mt-4 text-center">
             <Button
               className="mt-4 bg-blue-700 text-white px-6 py-2 rounded-md"
               onClick={onSubmit}
-              disabled={selectedAnswers.length === 0} // 可选：没有选择时禁用按钮
+              disabled={selectedAnswers.length === 0}
             >
               Submit Answers
             </Button>
@@ -141,7 +141,7 @@ const GameQuestion = ({
         )}
       </div>
 
-      {/* 显示结果信息 */}
+      {/* Show result info */}
       {gameState === "answered" && (
         <div className="mt-6 p-4 rounded-lg bg-blue-50 border border-blue-200">
           <h3 className="text-xl font-semibold text-blue-800 mb-2">
@@ -177,7 +177,7 @@ const GameQuestion = ({
               <ul className="list-disc pl-5 text-green-700">
                 {correctAnswers &&
                   correctAnswers
-                    .filter((answer) => answer !== "False") // 排除可能的False答案
+                    .filter((answer) => answer !== "False")
                     .map((answer, index) => <li key={index}>{answer}</li>)}
               </ul>
             )}

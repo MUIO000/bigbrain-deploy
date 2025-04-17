@@ -8,11 +8,11 @@ const GameResults = () => {
   const navigate = useNavigate();
   const { playerId: urlPlayerId } = useParams();
 
-  // 优先使用URL中的playerId，其次从localStorage获取
+  // Prefer playerId from URL, fallback to localStorage
   const playerId = urlPlayerId || localStorage.getItem("playerId");
   const totalScore = localStorage.getItem(`totalScore_${playerId}`) || 0;
 
-  // 使用playerID特定的键获取玩家名称
+  // Use playerID-specific key for player name
   const playerName =
     localStorage.getItem(`playerName_${playerId}`) ||
     localStorage.getItem("playerName") ||
@@ -27,7 +27,7 @@ const GameResults = () => {
     responseTime: [],
   });
 
-  // 计算统计数据
+  // Statistics
   const [stats, setStats] = useState({
     correctAnswers: 0,
     incorrectAnswers: 0,
@@ -45,20 +45,18 @@ const GameResults = () => {
     const fetchResults = async () => {
       try {
         const answersData = await getPlayerResults(playerId);
-        console.log("获取玩家结果:", answersData);
-        console.log(localStorage);
-        // 保存原始答案数据
+        // Save raw answers data
         setResults({ answers: answersData });
 
-        // 处理答案数据，计算统计信息
+        // Process answers data for statistics
         if (Array.isArray(answersData)) {
           processAnswers(answersData);
           processChartData(answersData);
         }
 
         setLoading(false);
+      // eslint-disable-next-line no-unused-vars
       } catch (error) {
-        console.error("Error fetching results:", error);
         setError("Failed to load game results");
         setShowError(true);
         setLoading(false);
@@ -68,16 +66,16 @@ const GameResults = () => {
     fetchResults();
   }, [playerId, navigate]);
 
-  // 处理答案数据，计算统计信息
+  // Process answers for statistics
   const processAnswers = (answers) => {
     if (!Array.isArray(answers)) return;
 
-    // 计算正确和错误的答案数量
+    // Count correct and incorrect answers
     const correctCount = answers.filter((answer) => answer.correct).length;
     const totalAnswered = answers.length;
     const incorrectCount = totalAnswered - correctCount;
 
-    // 计算平均响应时间
+    // Calculate average response time
     let totalResponseTime = 0;
     let validTimeCount = 0;
 
@@ -96,7 +94,7 @@ const GameResults = () => {
         ? Math.round((totalResponseTime / validTimeCount) * 10) / 10
         : 0;
 
-    // 计算得分 (每个正确答案得1分)
+    // Score (1 point per correct answer)
     const score = correctCount;
 
     setStats({
@@ -108,7 +106,7 @@ const GameResults = () => {
     });
   };
 
-  // 处理答案数据为图表所需格式
+  // Process answers for chart data
   const processChartData = (answers) => {
     const correctAnswersData = [];
     const responseTimeData = [];
@@ -116,14 +114,14 @@ const GameResults = () => {
     answers.forEach((answer, index) => {
       const questionNumber = `Q${index + 1}`;
 
-      // 对于正确率图表（单人只有0%或100%）
+      // For correct answer chart (single player: 0% or 100%)
       const correctPercentage = answer.correct ? 100 : 0;
       correctAnswersData.push({
         questionNumber,
         correctPercentage,
       });
 
-      // 计算响应时间（毫秒转换为秒）
+      // Calculate response time (ms to s)
       if (answer.questionStartedAt && answer.answeredAt) {
         const startTime = new Date(answer.questionStartedAt).getTime();
         const endTime = new Date(answer.answeredAt).getTime();
@@ -142,21 +140,21 @@ const GameResults = () => {
     });
   };
 
-  // 计算额外的统计数据
+  // Get additional statistics
   const getStatistics = () => {
     const correctCount = stats.correctAnswers || 0;
     const totalAnswered = stats.questionsAnswered || 0;
 
-    // 计算正确率百分比
+    // Calculate accuracy percentage
     const correctPercentage =
       totalAnswered > 0 ? Math.round((correctCount / totalAnswered) * 100) : 0;
 
-    // 计算平均答题时间（如果API提供）
+    // Calculate average answer time (if provided by API)
     const avgAnswerTime = stats.averageResponseTime
       ? `${stats.averageResponseTime}s`
       : "N/A";
 
-    // 根据分数给出评价
+    // Performance feedback
     let performance = "";
     if (correctPercentage >= 90) {
       performance = "Outstanding! You're a BigBrain master!";
@@ -199,7 +197,7 @@ const GameResults = () => {
             <p className="text-lg text-gray-600">Well done, {playerName}!</p>
           </div>
 
-          {/* 分数显示 */}
+          {/* Score display */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div className="flex flex-col items-center justify-center bg-blue-50 p-6 rounded-lg">
               <h2 className="text-lg font-medium mb-2 text-blue-800">
@@ -227,7 +225,7 @@ const GameResults = () => {
             </div>
           </div>
 
-          {/* 详细统计 */}
+          {/* Detailed statistics */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
             <div>
               <h2 className="text-xl font-medium mb-4 text-blue-800">
@@ -257,7 +255,7 @@ const GameResults = () => {
               </div>
             </div>
 
-            {/* 进度条可视化 */}
+            {/* Progress bar visualization */}
             <div className="flex flex-col justify-center">
               <h2 className="text-xl font-medium mb-4 text-blue-800">
                 Answer Summary
@@ -294,7 +292,7 @@ const GameResults = () => {
             </div>
           </div>
 
-          {/* 使用现有图表组件 */}
+          {/* Use existing chart component */}
           {chartData.correctAnswers.length > 0 && (
             <div className="mb-8">
               <h2 className="text-xl font-medium mb-4 text-blue-800 text-center">
@@ -357,7 +355,7 @@ const GameResults = () => {
             </div>
           )}
 
-          {/* 评价和反馈 */}
+          {/* Performance feedback */}
           <div className="bg-indigo-50 p-6 rounded-lg text-center">
             <h2 className="text-lg font-medium mb-2 text-indigo-800 font-semibold">
               Performance Feedback
