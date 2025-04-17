@@ -28,7 +28,7 @@ const SessionPage = () => {
     
     fetchSessionData();
     // 设置轮询，定期检查会话状态
-    const interval = setInterval(fetchSessionData, 5000);
+    const interval = setInterval(fetchSessionData, 2000);
     
     return () => clearInterval(interval);
   }, [sessionId, token]);

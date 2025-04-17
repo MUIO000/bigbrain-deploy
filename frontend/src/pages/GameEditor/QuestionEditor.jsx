@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Button from "../../components/Button";
 import InputField from "../../components/InputField";
@@ -11,10 +11,12 @@ import {
   formatQuestionForBackend,
   createDefaultQuestion,
 } from "../../utils/questionFormatter";
+import { AuthContext } from "../../contexts/AuthContext";
 
 const QuestionEditor = () => {
   const { gameId, questionId } = useParams();
   const navigate = useNavigate();
+  const { logout } = useContext(AuthContext);
 
   // State for game data
   const [, setAllGames] = useState([]);
@@ -128,6 +130,11 @@ const QuestionEditor = () => {
       ]);
     }
   }, [questionType]);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
 
   // 修改 handleSaveQuestion 函数，为判断题添加特殊验证
   const handleSaveQuestion = async () => {
@@ -369,13 +376,22 @@ const QuestionEditor = () => {
           <h1 className="text-3xl font-bold text-blue-800">
             Edit Question {parseInt(questionId, 10) + 1}
           </h1>
-          <Button
-            variant="secondary"
-            className="bg-gray-600 text-white hover:bg-gray-700"
-            onClick={handleBackToGame}
-          >
-            Back to Game
-          </Button>
+          <div className="flex space-x-2">
+            <Button
+              variant="secondary"
+              className="bg-gray-600 text-white hover:bg-gray-700"
+              onClick={handleBackToGame}
+            >
+              Back to Game
+            </Button>
+            <Button
+              variant="secondary"
+              className="bg-red-600 text-white hover:bg-red-700"
+              onClick={handleLogout}
+            >
+              Logout
+            </Button>
+          </div>
         </div>
 
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
@@ -454,7 +470,9 @@ const QuestionEditor = () => {
                   <>
                     <InputField
                       label={
-                        attachmentType === "youtube" ? "YouTube URL" : "Image URL"
+                        attachmentType === "youtube"
+                          ? "YouTube URL"
+                          : "Image URL"
                       }
                       id="attachmentUrl"
                       value={attachmentUrl}

@@ -30,8 +30,10 @@ const Dashboard = () => {
 
   const navigate = useNavigate();
   const { email, logout } = useContext(AuthContext);
-
   const token = localStorage.getItem("token");
+
+  // check if any game is active
+  const anyGameActive = games.some(game => Boolean(game.active));
 
   useEffect(() => {
     const fetchGames = async () => {
@@ -337,13 +339,15 @@ const Dashboard = () => {
                   >
                     Questions: {questionCount}
                   </p>
-                  <p
-                    className={`text-sm ${
-                      isActive ? "text-green-600" : "text-gray-600"
-                    }`}
-                  >
-                    Duration: {totalDuration} seconds
-                  </p>
+                  {!isActive && (
+                    <p
+                      className={`text-sm ${
+                        isActive ? "text-green-600" : "text-gray-600"
+                      }`}
+                    >
+                      Duration: {totalDuration} seconds
+                    </p>
+                  )}
                   {isActive && (
                     <div className="mt-2 flex items-center">
                       <span
@@ -385,7 +389,7 @@ const Dashboard = () => {
                         size="small"
                         className="bg-green-600 text-white hover:bg-green-700"
                         onClick={() => handleStartSession(index)}
-                        disabled={game.questions.length === 0}
+                        disabled={game.questions.length === 0 || anyGameActive}
                       >
                         Start
                       </Button>
